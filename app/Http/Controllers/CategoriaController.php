@@ -2,10 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Categoria;
+
 class CategoriaController extends Controller
 {
     public function index()
     {
-        return response()->json([]);
+        $categorias = Categoria::all();
+
+        return response()->json([
+            'mensaje' => 'Listado de categorías',
+            'categorias' => $categorias
+        ]);
     }
 }
