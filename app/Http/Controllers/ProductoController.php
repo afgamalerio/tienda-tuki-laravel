@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\UpdateProductRequest;
+use App\Http\Requests\StoreProductRequest;
 use App\Models\Producto;
 
 class ProductoController extends Controller
@@ -30,7 +31,7 @@ class ProductoController extends Controller
         return response()->json($producto);
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
         $producto = new Producto();
 
@@ -47,7 +48,7 @@ class ProductoController extends Controller
         return response()->json($producto, 201);
     }
 
-    public function update(Request $request, int $id)
+    public function update(UpdateProductRequest $request, int $id)
     {
         $producto = Producto::find($id);
 
