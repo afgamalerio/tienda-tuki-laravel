@@ -1,59 +1,481 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tienda Tuki
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Descripción
 
-## About Laravel
+Tienda Tuki es una aplicación web desarrollada con Laravel para gestionar los productos y categorías de una tienda.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+El proyecto utiliza Laravel, PHP, MySQL y Eloquent ORM. Actualmente cuenta con una API REST organizada bajo `/api/v1/` que permite realizar operaciones CRUD sobre productos y categorías.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Los productos se encuentran relacionados con categorías mediante relaciones Eloquent.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Funcionalidades implementadas
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Actualmente el proyecto permite:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Productos
 
-## Laravel Sponsors
+- Listar todos los productos.
+- Consultar un producto por su ID.
+- Crear un producto.
+- Modificar un producto.
+- Eliminar un producto.
+- Asociar un producto a una categoría.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Categorías
 
-### Premium Partners
+- Listar todas las categorías.
+- Consultar una categoría por su ID.
+- Crear una categoría.
+- Modificar una categoría.
+- Eliminar una categoría.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Base de datos
 
-## Contributing
+- Conexión con MySQL.
+- Migraciones para las tablas principales.
+- Seeders para cargar datos iniciales.
+- Relaciones entre productos y categorías mediante Eloquent.
+- Eliminación en cascada de productos cuando se elimina su categoría.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### API
 
-## Code of Conduct
+La aplicación cuenta con endpoints REST para productos y categorías.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Las respuestas de la API se realizan en formato JSON.
 
-## Security Vulnerabilities
+> La validación mediante Form Requests y una regla de validación personalizada serán incorporadas en la próxima etapa del desarrollo.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Tecnologías utilizadas
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- PHP 8.2
+- Laravel
+- MySQL
+- Eloquent ORM
+- Composer
+- Git
+- GitHub
+
+---
+
+## Requisitos
+
+Para ejecutar el proyecto es necesario tener instalado:
+
+- PHP 8.2 o superior.
+- Composer.
+- MySQL.
+- Git.
+
+También se recomienda utilizar un entorno de desarrollo local como XAMPP para disponer de PHP y MySQL.
+
+---
+
+# Instalación y configuración
+
+## 1. Clonar el repositorio
+
+Desde una terminal:
+
+```bash
+git clone https://github.com/afgamalerio/tienda-tuki-laravel.git
+```
+
+Luego ingresar a la carpeta del proyecto:
+
+```bash
+cd tienda-tuki-laravel
+```
+
+## 2. Instalar las dependencias
+
+Ejecutar:
+
+```bash
+composer install
+```
+
+Esto instala las dependencias definidas en `composer.json`.
+
+## 3. Configurar el archivo `.env`
+
+Laravel utiliza el archivo `.env` para configurar las variables de entorno.
+
+Si el archivo `.env` no existe, copiar `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+En Windows también se puede copiar el archivo manualmente desde `.env.example` y renombrarlo como `.env`.
+
+Configurar la conexión a MySQL:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=tienda-tuki
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+El valor de `DB_PASSWORD` debe modificarse si el usuario de MySQL tiene una contraseña configurada.
+
+## 4. Crear la base de datos
+
+Crear una base de datos MySQL llamada:
+
+```text
+tienda-tuki
+```
+
+Puede hacerse desde phpMyAdmin, MySQL Workbench o la herramienta de administración de MySQL utilizada.
+
+## 5. Generar la clave de Laravel
+
+Ejecutar:
+
+```bash
+php artisan key:generate
+```
+
+## 6. Ejecutar las migraciones
+
+Para crear las tablas:
+
+```bash
+php artisan migrate
+```
+
+Las migraciones crean las tablas necesarias para el funcionamiento de la aplicación.
+
+## 7. Cargar los datos iniciales
+
+Ejecutar:
+
+```bash
+php artisan db:seed
+```
+
+Esto ejecuta los Seeders configurados en el proyecto.
+
+También se puede reconstruir completamente la base de datos y ejecutar los Seeders con:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+> Este comando elimina las tablas existentes y las vuelve a crear, por lo que debe utilizarse únicamente cuando se desea reiniciar la base de datos.
+
+---
+
+# Ejecución del proyecto
+
+Para iniciar el servidor de desarrollo de Laravel:
+
+```bash
+php artisan serve
+```
+
+Por defecto, la aplicación estará disponible en:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+# Estructura del proyecto
+
+El proyecto utiliza la estructura estándar de Laravel.
+
+## `app/Models`
+
+Contiene los modelos Eloquent de la aplicación.
+
+Actualmente se encuentran:
+
+```text
+Producto.php
+Categoria.php
+User.php
+```
+
+Los modelos `Producto` y `Categoria` representan las entidades principales de la tienda y contienen sus relaciones Eloquent.
+
+### Relaciones
+
+Un producto pertenece a una categoría:
+
+```text
+Producto → belongsTo → Categoria
+```
+
+Una categoría puede tener muchos productos:
+
+```text
+Categoria → hasMany → Producto
+```
+
+---
+
+## `app/Http/Controllers`
+
+Contiene los controladores que manejan las peticiones de la aplicación.
+
+Actualmente se encuentran:
+
+```text
+ProductoController.php
+CategoriaController.php
+```
+
+Los controladores implementan las operaciones principales del CRUD.
+
+---
+
+## `database/migrations`
+
+Contiene las migraciones utilizadas para definir la estructura de la base de datos.
+
+Entre las principales tablas se encuentran:
+
+```text
+users
+categorias
+productos
+```
+
+La tabla `productos` posee una clave foránea `categoria_id` que relaciona cada producto con una categoría.
+
+---
+
+## `database/seeders`
+
+Contiene los Seeders utilizados para cargar datos iniciales en la base de datos.
+
+Actualmente se utiliza para cargar categorías iniciales.
+
+---
+
+## `routes`
+
+Contiene las rutas de la aplicación.
+
+Las rutas de la API se encuentran en:
+
+```text
+routes/api.php
+```
+
+Los endpoints utilizan el prefijo:
+
+```text
+/api/v1/
+```
+
+---
+
+# Endpoints de la API
+
+## Categorías
+
+### Listar categorías
+
+```http
+GET /api/v1/categorias
+```
+
+### Obtener una categoría
+
+```http
+GET /api/v1/categorias/{id}
+```
+
+### Crear una categoría
+
+```http
+POST /api/v1/categorias
+```
+
+Ejemplo de datos:
+
+```json
+{
+    "nombre": "Soportes"
+}
+```
+
+### Modificar una categoría
+
+```http
+PUT /api/v1/categorias/{id}
+```
+
+Ejemplo:
+
+```json
+{
+    "nombre": "Soportes para celular"
+}
+```
+
+### Eliminar una categoría
+
+```http
+DELETE /api/v1/categorias/{id}
+```
+
+---
+
+# Productos
+
+### Listar productos
+
+```http
+GET /api/v1/productos
+```
+
+### Obtener un producto
+
+```http
+GET /api/v1/productos/{id}
+```
+
+### Crear un producto
+
+```http
+POST /api/v1/productos
+```
+
+Ejemplo de datos:
+
+```json
+{
+    "nombre": "Soporte para celular",
+    "descripcion": "Soporte de celular impreso en 3D",
+    "imagen": "soporte-celular.jpg",
+    "precio": 8500,
+    "stock": 10,
+    "color": "Negro",
+    "categoria_id": 1
+}
+```
+
+### Modificar un producto
+
+```http
+PUT /api/v1/productos/{id}
+```
+
+Ejemplo:
+
+```json
+{
+    "nombre": "Soporte para celular Tuki",
+    "descripcion": "Soporte de celular impreso en 3D",
+    "imagen": "soporte-celular.jpg",
+    "precio": 9000,
+    "stock": 15,
+    "color": "Negro",
+    "categoria_id": 1
+}
+```
+
+### Eliminar un producto
+
+```http
+DELETE /api/v1/productos/{id}
+```
+
+---
+
+# Forma de probar el proyecto
+
+## 1. Iniciar Laravel
+
+Ejecutar:
+
+```bash
+php artisan serve
+```
+
+## 2. Consultar los endpoints
+
+Los endpoints pueden probarse mediante una herramienta para realizar solicitudes HTTP, como Postman, o cualquier cliente compatible con APIs REST.
+
+También se pueden consultar los endpoints `GET` directamente desde el navegador.
+
+Por ejemplo:
+
+```text
+http://127.0.0.1:8000/api/v1/productos
+```
+
+o:
+
+```text
+http://127.0.0.1:8000/api/v1/categorias
+```
+
+Para las operaciones `POST`, `PUT` y `DELETE` se debe utilizar una herramienta que permita enviar solicitudes HTTP.
+
+## 3. Verificar la base de datos
+
+Los datos creados o modificados mediante la API se almacenan en la base de datos MySQL configurada en el archivo `.env`.
+
+También es posible consultar y manipular los modelos mediante Laravel Tinker:
+
+```bash
+php artisan tinker
+```
+
+---
+
+# Comandos principales
+
+### Iniciar el servidor
+
+```bash
+php artisan serve
+```
+
+### Ejecutar migraciones
+
+```bash
+php artisan migrate
+```
+
+### Ejecutar Seeders
+
+```bash
+php artisan db:seed
+```
+
+### Recrear la base de datos y ejecutar Seeders
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+### Abrir Tinker
+
+```bash
+php artisan tinker
+```
+
+### Ver las rutas
+
+```bash
+php artisan route:list
+```
+
+---
+
+# Autor
+
+**Anahi Fernández Gamalerio**
