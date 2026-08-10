@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('precio', 10, 2);
             $table->integer('stock');
             $table->string('color');
-            $table->foreignId('categoria_id')->constrained('categorias');
+            $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
             $table->timestamps();
         });
     }
