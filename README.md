@@ -22,6 +22,8 @@ Actualmente el proyecto permite:
 - Modificar un producto.
 - Eliminar un producto.
 - Asociar un producto a una categoría.
+- Validar los datos recibidos mediante Form Requests.
+- Validar que no existan variantes duplicadas de un producto según su nombre y color.
 
 ### Categorías
 
@@ -30,6 +32,7 @@ Actualmente el proyecto permite:
 - Crear una categoría.
 - Modificar una categoría.
 - Eliminar una categoría.
+- Validar los datos recibidos mediante Form Requests.
 
 ### Base de datos
 
@@ -45,7 +48,77 @@ La aplicación cuenta con endpoints REST para productos y categorías.
 
 Las respuestas de la API se realizan en formato JSON.
 
-> La validación mediante Form Requests y una regla de validación personalizada serán incorporadas en la próxima etapa del desarrollo.
+---
+
+## Validaciones
+
+La aplicación utiliza **Form Requests** para centralizar y organizar las validaciones de los datos recibidos por la API.
+
+Actualmente se utilizan:
+
+```text
+app/Http/Requests/
+├── StoreCategoriaRequest.php
+├── StoreProductRequest.php
+└── UpdateProductRequest.php
+```
+
+Las validaciones incluyen, entre otras:
+
+- Campos obligatorios.
+- Tipos de datos.
+- Valores numéricos.
+- Valores mínimos para precio y stock.
+- Existencia de la categoría asociada.
+- Campos opcionales como la imagen.
+
+Las respuestas de validación se devuelven en formato JSON con código HTTP `422`.
+
+Ejemplo:
+
+```json
+{
+    "mensaje": "Error de validación",
+    "errores": {
+        "precio": [
+            "El precio no puede ser negativo."
+        ]
+    }
+}
+```
+
+### Regla de validación personalizada
+
+El proyecto cuenta con una regla personalizada llamada:
+
+```text
+UniqueProductVariant
+```
+
+Esta regla verifica que no exista más de un producto con la misma combinación de:
+
+```text
+nombre + color
+```
+
+La regla contempla también las actualizaciones de productos, ignorando el propio ID del producto que se está modificando.
+
+Por ejemplo:
+
+```text
+Producto 1 → Soporte para celular / Rojo
+Producto 2 → Soporte para celular / Negro
+```
+
+Ambas variantes son válidas porque tienen colores diferentes.
+
+Sin embargo, intentar crear otro:
+
+```text
+Soporte para celular / Negro
+```
+
+generará un error de validación porque esa variante ya existe.
 
 ---
 
@@ -238,6 +311,36 @@ Los controladores implementan las operaciones principales del CRUD.
 
 ---
 
+## `app/Http/Requests`
+
+Contiene los Form Requests utilizados para validar los datos recibidos por la API.
+
+Actualmente se encuentran:
+
+```text
+StoreCategoriaRequest.php
+StoreProductRequest.php
+UpdateProductRequest.php
+```
+
+Estos archivos permiten separar la lógica de validación de los controladores.
+
+---
+
+## `app/Rules`
+
+Contiene las reglas de validación personalizadas.
+
+Actualmente se encuentra:
+
+```text
+UniqueProductVariant.php
+```
+
+Esta regla permite controlar que no existan variantes duplicadas de productos según su nombre y color.
+
+---
+
 ## `database/migrations`
 
 Contiene las migraciones utilizadas para definir la estructura de la base de datos.
@@ -277,6 +380,32 @@ Los endpoints utilizan el prefijo:
 ```text
 /api/v1/
 ```
+
+---
+
+# Flujo general de una petición
+
+La API sigue un flujo basado en la arquitectura de Laravel:
+
+```text
+Request
+   ↓
+Route
+   ↓
+Form Request
+   ↓
+Controller
+   ↓
+Model / Eloquent
+   ↓
+Database
+   ↓
+Response JSON
+```
+
+Los Form Requests se encargan de validar los datos antes de que lleguen al controlador.
+
+Los modelos Eloquent se encargan de interactuar con la base de datos y gestionar las relaciones entre las entidades.
 
 ---
 
@@ -424,7 +553,28 @@ http://127.0.0.1:8000/api/v1/categorias
 
 Para las operaciones `POST`, `PUT` y `DELETE` se debe utilizar una herramienta que permita enviar solicitudes HTTP.
 
-## 3. Verificar la base de datos
+## 3. Probar las validaciones
+
+Las validaciones pueden comprobarse enviando datos incorrectos mediante una herramienta HTTP.
+
+Por ejemplo, un producto con precio negativo:
+
+```json
+{
+    "nombre": "Soporte",
+    "descripcion": "Prueba",
+    "precio": -500,
+    "stock": 10,
+    "color": "Negro",
+    "categoria_id": 1
+}
+```
+
+La API responderá con código `422` y los mensajes de validación correspondientes.
+
+También puede probarse la regla `UniqueProductVariant` intentando crear o actualizar un producto utilizando una combinación de nombre y color que ya exista.
+
+## 4. Verificar la base de datos
 
 Los datos creados o modificados mediante la API se almacenan en la base de datos MySQL configurada en el archivo `.env`.
 
@@ -476,6 +626,6 @@ php artisan route:list
 
 ---
 
-# Autor
+# Autora
 
 **Anahi Fernández Gamalerio**
