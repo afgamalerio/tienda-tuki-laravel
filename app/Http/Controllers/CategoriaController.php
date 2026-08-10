@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categoria;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreCategoriaRequest;
+use App\Http\Requests\UpdateCategoriaRequest;
 
 class CategoriaController extends Controller
 {
@@ -30,7 +31,7 @@ class CategoriaController extends Controller
         return response()->json($categoria);
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoriaRequest $request)
     {
         $categoria = new Categoria();
 
@@ -41,7 +42,7 @@ class CategoriaController extends Controller
         return response()->json($categoria, 201);
     }
 
-    public function update(Request $request, int $id)
+    public function update(UpdateCategoriaRequest $request, int $id)
     {
         $categoria = Categoria::find($id);
 
