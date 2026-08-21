@@ -39,4 +39,53 @@ class CategoriaApiTest extends TestCase
             ->assertNotFound()
             ->assertJsonPath('mensaje', 'Categoría no encontrada');
     }
+
+    public function test_can_update_a_category(): void
+    {
+        $categoria = $this->postJson('/api/v1/categorias', [
+            'nombre' => 'Soportes',
+        ])->json();
+
+        $this->putJson('/api/v1/categorias/'.$categoria['id'], [
+            'nombre' => 'Accesorios',
+        ])
+            ->assertOk()
+            ->assertJsonPath('nombre', 'Accesorios');
+
+        $this->assertDatabaseHas('categorias', [
+            'id' => $categoria['id'],
+            'nombre' => 'Accesorios',
+        ]);
+    }
+
+    public function test_can_delete_a_category(): void
+    {
+        $categoria = $this->postJson('/api/v1/categorias', [
+            'nombre' => 'Soportes',
+        ])->json();
+
+        $this->deleteJson('/api/v1/categorias/'.$categoria['id'])
+            ->assertOk()
+            ->assertJsonPath('mensaje', 'Categoría eliminada correctamente');
+
+        $this->assertDatabaseMissing('categorias', [
+            'id' => $categoria['id'],
+        ]);
+    }
+
+    public function test_returns_not_found_when_updating_a_missing_category(): void
+    {
+        $this->putJson('/api/v1/categorias/999', [
+            'nombre' => 'Accesorios',
+        ])
+            ->assertNotFound()
+            ->assertJsonPath('mensaje', 'Categoría no encontrada');
+    }
+
+    public function test_returns_not_found_when_deleting_a_missing_category(): void
+    {
+        $this->deleteJson('/api/v1/categorias/999')
+            ->assertNotFound()
+            ->assertJsonPath('mensaje', 'Categoría no encontrada');
+    }
 }
