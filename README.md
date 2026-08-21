@@ -87,6 +87,37 @@ Ejemplo:
 }
 ```
 
+## Data Transfer Objects (DTOs)
+
+La API utiliza DTOs para organizar los datos que se envían entre las distintas
+partes de la aplicación y para preparar respuestas con una estructura clara.
+
+### `CartSummaryData`
+
+Se encuentra en `app/Data/CartSummaryData.php` y representa el resumen del
+carrito. Contiene:
+
+- Items del carrito.
+- Subtotal.
+- Impuestos.
+- Costo de envío.
+- Total.
+
+Se utiliza en `/api/v1/carrito/resumen` y `/api/v1/checkout/revisar`.
+
+### `CheckoutData`
+
+Se encuentra en `app/Data/CheckoutData.php` y organiza los datos necesarios para
+confirmar una compra:
+
+- Nombre del destinatario.
+- Dirección.
+- Ciudad.
+- Método de pago.
+
+Se utiliza en `/api/v1/checkout/confirmar`, después de que
+`CheckoutRequest` valida los datos recibidos.
+
 ### Regla de validación personalizada
 
 El proyecto cuenta con una regla personalizada llamada:
