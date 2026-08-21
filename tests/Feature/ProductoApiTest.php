@@ -104,6 +104,61 @@ class ProductoApiTest extends TestCase
             ->assertJsonPath('errores.color.0', 'Ya existe otro producto con ese nombre y color.');
     }
 
+    public function test_cannot_create_a_product_with_a_missing_category(): void
+    {
+        $this->postJson('/api/v1/productos', [
+            ...$this->productData(),
+            'categoria_id' => 999,
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('errores.categoria_id.0', 'La categoría seleccionada no existe.');
+    }
+
+    public function test_cannot_create_a_product_without_required_data(): void
+    {
+        $this->postJson('/api/v1/productos', [])
+            ->assertStatus(422)
+            ->assertJsonStructure([
+                'mensaje',
+                'errores' => [
+                    'nombre',
+                    'descripcion',
+                    'precio',
+                    'stock',
+                    'color',
+                    'categoria_id',
+                ],
+            ]);
+    }
+
+    public function test_cannot_update_a_product_to_a_duplicate_name_and_color(): void
+    {
+        $categoria = Categoria::create(['nombre' => 'Soportes']);
+        $productoOriginal = Producto::create([
+            ...$this->productData(),
+            'categoria_id' => $categoria->id,
+        ]);
+        $productoAActualizar = Producto::create([
+            ...$this->productData(),
+            'nombre' => 'Otro soporte',
+            'color' => 'Azul',
+            'categoria_id' => $categoria->id,
+        ]);
+
+        $this->putJson('/api/v1/productos/'.$productoAActualizar->id, [
+            ...$this->productData(),
+            'categoria_id' => $categoria->id,
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('errores.color.0', 'Ya existe otro producto con ese nombre y color.');
+
+        $this->assertDatabaseHas('productos', [
+            'id' => $productoOriginal->id,
+            'nombre' => 'Soporte para celular',
+            'color' => 'Negro',
+        ]);
+    }
+
     private function productData(): array
     {
         return [
