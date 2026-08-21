@@ -2,20 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UpdateProductRequest;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Models\Producto;
 
 class ProductoController extends Controller
 {
     public function index()
     {
-        $productos = Producto::all();
-
         return response()->json([
             'mensaje' => 'Listado de productos',
-            'productos' => $productos
+            'productos' => Producto::all()
         ]);
+    }
+
+    public function store(StoreProductRequest $request)
+    {
+        $producto = Producto::create($request->validated());
+
+        return response()->json([
+            'mensaje' => 'Producto creado correctamente',
+            'producto' => $producto
+        ], 201);
     }
 
     public function show(int $id)
@@ -28,24 +36,10 @@ class ProductoController extends Controller
             ], 404);
         }
 
-        return response()->json($producto);
-    }
-
-    public function store(StoreProductRequest $request)
-    {
-        $producto = new Producto();
-
-        $producto->nombre = $request->nombre;
-        $producto->descripcion = $request->descripcion;
-        $producto->imagen = $request->imagen;
-        $producto->precio = $request->precio;
-        $producto->stock = $request->stock;
-        $producto->color = $request->color;
-        $producto->categoria_id = $request->categoria_id;
-
-        $producto->save();
-
-        return response()->json($producto, 201);
+        return response()->json([
+            'mensaje' => 'Producto encontrado',
+            'producto' => $producto
+        ]);
     }
 
     public function update(UpdateProductRequest $request, int $id)
@@ -53,20 +47,17 @@ class ProductoController extends Controller
         $producto = Producto::find($id);
 
         if (!$producto) {
-            return response()->json(['mensaje' => 'Producto no encontrado'], 404);
+            return response()->json([
+                'mensaje' => 'Producto no encontrado'
+            ], 404);
         }
 
-        $producto->nombre = $request->nombre;
-        $producto->descripcion = $request->descripcion;
-        $producto->imagen = $request->imagen;
-        $producto->precio = $request->precio;
-        $producto->stock = $request->stock;
-        $producto->color = $request->color;
-        $producto->categoria_id = $request->categoria_id;
+        $producto->update($request->validated());
 
-        $producto->save();
-
-        return response()->json($producto);
+        return response()->json([
+            'mensaje' => 'Producto actualizado correctamente',
+            'producto' => $producto
+        ]);
     }
 
     public function destroy(int $id)
@@ -74,11 +65,15 @@ class ProductoController extends Controller
         $producto = Producto::find($id);
 
         if (!$producto) {
-            return response()->json(['mensaje' => 'Producto no encontrado'], 404);
+            return response()->json([
+                'mensaje' => 'Producto no encontrado'
+            ], 404);
         }
 
         $producto->delete();
 
-        return response()->json(['mensaje' => 'Producto eliminado correctamente']);
+        return response()->json([
+            'mensaje' => 'Producto eliminado correctamente'
+        ]);
     }
 }

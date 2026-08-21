@@ -33,11 +33,7 @@ class CategoriaController extends Controller
 
     public function store(StoreCategoriaRequest $request)
     {
-        $categoria = new Categoria();
-
-        $categoria->nombre = $request->nombre;
-
-        $categoria->save();
+        $categoria = Categoria::create($request->validated());
 
         return response()->json($categoria, 201);
     }
@@ -50,8 +46,7 @@ class CategoriaController extends Controller
             return response()->json(['mensaje' => 'Categoría no encontrada'], 404);
         }
 
-        $categoria->nombre = $request->nombre;
-        $categoria->save();
+        $categoria->update($request->validated());
 
         return response()->json($categoria);
     }

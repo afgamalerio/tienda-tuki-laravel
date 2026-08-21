@@ -9,11 +9,11 @@ use Illuminate\Translation\PotentiallyTranslatedString;
 
 class UniqueProductVariant implements ValidationRule
 {
-    private string $nombre;
-    private string $color;
+    private ?string $nombre;
+    private ?string $color;
     private ?int $productoId;
 
-    public function __construct(string $nombre, string $color, ?int $productoId = null)
+    public function __construct(?string $nombre, ?string $color, ?int $productoId = null)
     {
         $this->nombre = $nombre;
         $this->color = $color;
@@ -22,6 +22,10 @@ class UniqueProductVariant implements ValidationRule
     
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        if ($this->nombre === null || $this->color === null) {
+            return;
+        }
+
         $query = Producto::where('nombre', $this->nombre)
             ->where('color', $this->color);
 
