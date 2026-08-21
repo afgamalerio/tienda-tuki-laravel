@@ -275,6 +275,10 @@ Actualmente se encuentran:
 ```text
 Producto.php
 Categoria.php
+Carrito.php
+CarritoItem.php
+Pedido.php
+PedidoItem.php
 User.php
 ```
 
@@ -305,6 +309,7 @@ Actualmente se encuentran:
 ```text
 ProductoController.php
 CategoriaController.php
+CarritoController.php
 ```
 
 Los controladores implementan las operaciones principales del CRUD.
@@ -321,6 +326,9 @@ Actualmente se encuentran:
 StoreCategoriaRequest.php
 StoreProductRequest.php
 UpdateProductRequest.php
+AddCartItemRequest.php
+UpdateCartItemRequest.php
+CheckoutRequest.php
 ```
 
 Estos archivos permiten separar la lógica de validación de los controladores.
@@ -410,6 +418,109 @@ Los modelos Eloquent se encargan de interactuar con la base de datos y gestionar
 ---
 
 # Endpoints de la API
+
+## Principios REST
+
+La API utiliza una arquitectura cliente-servidor: el cliente realiza
+peticiones HTTP y el servidor procesa la solicitud, consulta la base de datos
+y devuelve una respuesta JSON. Cada recurso se identifica mediante una URL y
+los verbos HTTP expresan la operación:
+
+- `GET`: consultar recursos.
+- `POST`: crear un recurso o ejecutar una confirmación.
+- `PUT`: reemplazar o actualizar datos.
+- `DELETE`: eliminar un recurso.
+
+Las respuestas utilizan códigos HTTP para comunicar el resultado: `200` para
+operaciones correctas, `201` para recursos creados, `404` cuando no existe el
+recurso y `422` cuando los datos no superan la validación.
+
+## Carrito y checkout
+
+El carrito se persiste en la base de datos y se identifica con el header:
+
+```http
+X-Session-Id: cliente-1
+```
+
+Se debe enviar el mismo valor en todas las peticiones del mismo cliente.
+
+### Agregar un producto
+
+```http
+POST /api/v1/carrito/items
+```
+
+```json
+{
+    "producto_id": 1,
+    "cantidad": 2
+}
+```
+
+### Consultar carrito
+
+```http
+GET /api/v1/carrito
+```
+
+### Actualizar cantidad
+
+```http
+PUT /api/v1/carrito/items/{productoId}
+```
+
+```json
+{
+    "cantidad": 3
+}
+```
+
+### Eliminar un producto del carrito
+
+```http
+DELETE /api/v1/carrito/items/{productoId}
+```
+
+### Vaciar carrito
+
+```http
+DELETE /api/v1/carrito
+```
+
+### Resumen de compra
+
+```http
+GET /api/v1/carrito/resumen
+```
+
+El resumen devuelve `subtotal`, `impuestos`, `envio` y `total`. Los impuestos
+se calculan al 21% y el envío es gratuito desde un subtotal de 50000.
+
+### Revisar checkout
+
+```http
+GET /api/v1/checkout/revisar
+```
+
+### Confirmar compra
+
+```http
+POST /api/v1/checkout/confirmar
+```
+
+```json
+{
+    "nombre_destinatario": "Ana Pérez",
+    "direccion": "Calle 123",
+    "ciudad": "Buenos Aires",
+    "metodo_pago": "tarjeta"
+}
+```
+
+Los métodos de pago aceptados son `tarjeta`, `transferencia` y `efectivo`.
+Al confirmar, se crea el pedido, se guardan sus items, se descuenta el stock
+y se vacía el carrito dentro de una transacción.
 
 ## Categorías
 

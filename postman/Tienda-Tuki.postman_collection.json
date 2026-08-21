@@ -1,0 +1,53 @@
+{
+  "info": {
+    "name": "Tienda Tuki API",
+    "description": "Coleccion para probar el CRUD, carrito, resumen y checkout de Tienda Tuki.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api/v1" },
+    { "key": "session_id", "value": "cliente-1" },
+    { "key": "categoria_id", "value": "1" },
+    { "key": "producto_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Categorias",
+      "item": [
+        { "name": "Listar categorias", "request": { "method": "GET", "url": "{{base_url}}/categorias" } },
+        { "name": "Obtener categoria", "request": { "method": "GET", "url": "{{base_url}}/categorias/{{categoria_id}}" } },
+        { "name": "Crear categoria", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Accesorios\"\n}" }, "url": "{{base_url}}/categorias" } },
+        { "name": "Actualizar categoria", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Accesorios actualizados\"\n}" }, "url": "{{base_url}}/categorias/{{categoria_id}}" } },
+        { "name": "Eliminar categoria", "request": { "method": "DELETE", "url": "{{base_url}}/categorias/{{categoria_id}}" } }
+      ]
+    },
+    {
+      "name": "Productos",
+      "item": [
+        { "name": "Listar productos", "request": { "method": "GET", "url": "{{base_url}}/productos" } },
+        { "name": "Obtener producto", "request": { "method": "GET", "url": "{{base_url}}/productos/{{producto_id}}" } },
+        { "name": "Crear producto", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Producto Postman\",\n  \"descripcion\": \"Producto de prueba\",\n  \"precio\": 8500,\n  \"stock\": 10,\n  \"color\": \"Negro\",\n  \"categoria_id\": {{categoria_id}}\n}" }, "url": "{{base_url}}/productos" } },
+        { "name": "Actualizar producto", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Producto actualizado\",\n  \"descripcion\": \"Producto modificado\",\n  \"precio\": 9000,\n  \"stock\": 15,\n  \"color\": \"Negro\",\n  \"categoria_id\": {{categoria_id}}\n}" }, "url": "{{base_url}}/productos/{{producto_id}}" } },
+        { "name": "Eliminar producto", "request": { "method": "DELETE", "url": "{{base_url}}/productos/{{producto_id}}" } }
+      ]
+    },
+    {
+      "name": "Carrito",
+      "item": [
+        { "name": "Ver carrito", "request": { "method": "GET", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito" } },
+        { "name": "Agregar item", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-Id", "value": "{{session_id}}" }], "body": { "mode": "raw", "raw": "{\n  \"producto_id\": {{producto_id}},\n  \"cantidad\": 2\n}" }, "url": "{{base_url}}/carrito/items" } },
+        { "name": "Actualizar cantidad", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-Id", "value": "{{session_id}}" }], "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 3\n}" }, "url": "{{base_url}}/carrito/items/{{producto_id}}" } },
+        { "name": "Eliminar item", "request": { "method": "DELETE", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito/items/{{producto_id}}" } },
+        { "name": "Vaciar carrito", "request": { "method": "DELETE", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito" } },
+        { "name": "Ver resumen", "request": { "method": "GET", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito/resumen" } }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "item": [
+        { "name": "Revisar compra", "request": { "method": "GET", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/checkout/revisar" } },
+        { "name": "Confirmar compra", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-Id", "value": "{{session_id}}" }], "body": { "mode": "raw", "raw": "{\n  \"nombre_destinatario\": \"Ana Perez\",\n  \"direccion\": \"Calle 123\",\n  \"ciudad\": \"Buenos Aires\",\n  \"metodo_pago\": \"tarjeta\"\n}" }, "url": "{{base_url}}/checkout/confirmar" } }
+      ]
+    }
+  ]
+}
