@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\UsuarioController;
 
 Route::get('/user', function (Request $request) {
@@ -30,4 +31,14 @@ Route::prefix('v1')->group(function () {
     //Rutas de la API para usuarios
     Route::get('/usuarios', [UsuarioController::class, 'index'])
         ->name('api.usuarios');
+
+    // Rutas del carrito y checkout
+    Route::get('/carrito', [CarritoController::class, 'index']);
+    Route::post('/carrito/items', [CarritoController::class, 'store']);
+    Route::put('/carrito/items/{productoId}', [CarritoController::class, 'update']);
+    Route::delete('/carrito/items/{productoId}', [CarritoController::class, 'destroy']);
+    Route::delete('/carrito', [CarritoController::class, 'clear']);
+    Route::get('/carrito/resumen', [CarritoController::class, 'summary']);
+    Route::get('/checkout/revisar', [CarritoController::class, 'review']);
+    Route::post('/checkout/confirmar', [CarritoController::class, 'confirm']);
 });
