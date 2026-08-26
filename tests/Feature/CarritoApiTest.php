@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Categoria;
 use App\Models\Producto;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class CarritoApiTest extends TestCase
@@ -25,6 +28,20 @@ class CarritoApiTest extends TestCase
         ])
             ->assertUnauthorized()
             ->assertJsonPath('mensaje', 'El token no existe, es inválido o expiró.');
+    }
+
+    public function test_cart_rejects_an_expired_token(): void
+    {
+        $token = JWTAuth::fromUser(User::factory()->create());
+        Carbon::setTestNow(now()->addMinutes(config('jwt.ttl') + 1));
+
+        $this->getJson('/api/v1/carrito', [
+            'Authorization' => 'Bearer '.$token,
+        ])
+            ->assertUnauthorized()
+            ->assertJsonPath('mensaje', 'El token no existe, es inválido o expiró.');
+
+        Carbon::setTestNow();
     }
 
     public function test_can_add_a_product_and_get_its_summary(): void
