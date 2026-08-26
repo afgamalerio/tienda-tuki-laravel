@@ -313,6 +313,9 @@ PedidoItem.php
 User.php
 ```
 
+El modelo `User` implementa `JWTSubject` y se relaciona con sus carritos y
+pedidos mediante `user_id`.
+
 Los modelos `Producto` y `Categoria` representan las entidades principales de la tienda y contienen sus relaciones Eloquent.
 
 ### Relaciones
@@ -341,6 +344,7 @@ Actualmente se encuentran:
 ProductoController.php
 CategoriaController.php
 CarritoController.php
+AuthController.php
 ```
 
 Los controladores implementan las operaciones principales del CRUD.
@@ -355,7 +359,10 @@ Actualmente se encuentran:
 
 ```text
 StoreCategoriaRequest.php
+UpdateCategoriaRequest.php
 StoreProductRequest.php
+LoginRequest.php
+RegisterRequest.php
 UpdateProductRequest.php
 AddCartItemRequest.php
 UpdateCartItemRequest.php
@@ -390,6 +397,10 @@ Entre las principales tablas se encuentran:
 users
 categorias
 productos
+carritos
+carrito_items
+pedidos
+pedido_items
 ```
 
 La tabla `productos` posee una clave foránea `categoria_id` que relaciona cada producto con una categoría.
@@ -419,6 +430,9 @@ Los endpoints utilizan el prefijo:
 ```text
 /api/v1/
 ```
+
+La ruta `/api/user` también requiere un JWT válido y devuelve los datos públicos
+del usuario autenticado.
 
 ---
 

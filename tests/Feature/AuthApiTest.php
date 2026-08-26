@@ -78,4 +78,17 @@ class AuthApiTest extends TestCase
             ->assertUnauthorized()
             ->assertJsonPath('mensaje', 'Las credenciales son incorrectas');
     }
+
+    public function test_can_get_the_authenticated_user(): void
+    {
+        $usuario = User::factory()->create([
+            'name' => 'Ana Pérez',
+            'email' => 'ana@example.com',
+        ]);
+
+        $this->getJson('/api/user', $this->encabezadosAutenticados($usuario))
+            ->assertOk()
+            ->assertJsonPath('usuario.email', 'ana@example.com')
+            ->assertJsonMissingPath('usuario.password');
+    }
 }

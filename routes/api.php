@@ -9,8 +9,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+    return response()->json([
+        'usuario' => $request->user('api')->only(['id', 'name', 'email']),
+    ]);
+})->middleware('jwt.auth');
 
 Route::prefix('v1')->group(function () {
 
