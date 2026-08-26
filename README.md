@@ -87,6 +87,37 @@ Ejemplo:
 }
 ```
 
+## Data Transfer Objects (DTOs)
+
+La API utiliza DTOs para organizar los datos que se envían entre las distintas
+partes de la aplicación y para preparar respuestas con una estructura clara.
+
+### `CartSummaryData`
+
+Se encuentra en `app/Data/CartSummaryData.php` y representa el resumen del
+carrito. Contiene:
+
+- Items del carrito.
+- Subtotal.
+- Impuestos.
+- Costo de envío.
+- Total.
+
+Se utiliza en `/api/v1/carrito/resumen` y `/api/v1/checkout/revisar`.
+
+### `CheckoutData`
+
+Se encuentra en `app/Data/CheckoutData.php` y organiza los datos necesarios para
+confirmar una compra:
+
+- Nombre del destinatario.
+- Dirección.
+- Ciudad.
+- Método de pago.
+
+Se utiliza en `/api/v1/checkout/confirmar`, después de que
+`CheckoutRequest` valida los datos recibidos.
+
 ### Regla de validación personalizada
 
 El proyecto cuenta con una regla personalizada llamada:
@@ -437,13 +468,16 @@ recurso y `422` cuando los datos no superan la validación.
 
 ## Carrito y checkout
 
-El carrito se persiste en la base de datos y se identifica con el header:
+El carrito se persiste en la base de datos y pertenece al usuario autenticado.
+Las peticiones deben incluir:
 
 ```http
-X-Session-Id: cliente-1
+Authorization: Bearer <token>
 ```
 
-Se debe enviar el mismo valor en todas las peticiones del mismo cliente.
+El `X-Session-Id` ya no determina el propietario del carrito. El servidor usa
+el usuario identificado por el JWT, por lo que un usuario no puede acceder al
+carrito de otro.
 
 ### Agregar un producto
 
@@ -736,6 +770,64 @@ php artisan route:list
 ```
 
 ---
+
+# Seguridad y autenticación
+
+La API utiliza JSON Web Tokens (JWT). Un token tiene la estructura:
+
+```text
+HEADER.PAYLOAD.SIGNATURE
+```
+
+El header indica el tipo y algoritmo, el payload contiene los claims mínimos
+como el identificador del usuario y la expiración, y la firma permite verificar
+que el token no fue alterado. El token se transmite mediante
+`Authorization: Bearer <token>` y no debe enviarse en una URL ni guardarse en
+logs.
+
+### Registro y login
+
+```http
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+```
+
+El registro valida email único y confirmación de contraseña. Las contraseñas se
+guardan mediante hashing bcrypt y nunca se devuelven en JSON. El login responde
+`401` si las credenciales son incorrectas y entrega un token con expiración
+configurada mediante `JWT_TTL`.
+
+### Rutas protegidas
+
+Requieren JWT válido todas las rutas de carrito y checkout:
+
+- `/api/v1/carrito`
+- `/api/v1/carrito/items`
+- `/api/v1/carrito/resumen`
+- `/api/v1/checkout/revisar`
+- `/api/v1/checkout/confirmar`
+
+Sin token, con token inválido o con token expirado la API responde `401`.
+Los datos inválidos responden `422` y los recursos inexistentes responden
+`404`.
+
+### CSRF, XSS y SQL Injection
+
+La API autenticada con Bearer Token es stateless y no depende de cookies de
+sesión para proteger el carrito o el checkout. No se desactiva globalmente el
+middleware CSRF. Los datos se validan con Form Requests, las respuestas son
+JSON y las vistas Blade mantienen el escaping de Laravel. Las consultas se
+realizan mediante Eloquent o Query Builder sin concatenar valores recibidos
+del usuario.
+
+### HTTPS
+
+En desarrollo local puede utilizarse `http://127.0.0.1:8000`. En producción
+deben utilizarse conexiones `https://`, especialmente para registro, login,
+JWT, carrito, checkout y datos de pedidos.
+
+La colección de Postman contiene ejemplos de registro, login, errores `401`,
+errores `404`, validaciones `422` y peticiones protegidas.
 
 # Autora
 

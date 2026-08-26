@@ -17,7 +17,8 @@ class CategoriaApiTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonPath('nombre', 'Soportes');
+            ->assertJsonPath('mensaje', 'Categoría creada correctamente')
+            ->assertJsonPath('categoria.nombre', 'Soportes');
 
         $this->assertDatabaseHas('categorias', [
             'nombre' => 'Soportes',
@@ -33,6 +34,15 @@ class CategoriaApiTest extends TestCase
             ->assertJsonPath('errores.nombre.0', 'El nombre de la categoría es obligatorio.');
     }
 
+    public function test_cannot_create_a_category_with_a_duplicate_name(): void
+    {
+        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes']);
+
+        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes'])
+            ->assertStatus(422)
+            ->assertJsonPath('errores.nombre.0', 'Ya existe una categoría con ese nombre.');
+    }
+
     public function test_returns_not_found_for_a_missing_category(): void
     {
         $this->getJson('/api/v1/categorias/999')
@@ -44,13 +54,14 @@ class CategoriaApiTest extends TestCase
     {
         $categoria = $this->postJson('/api/v1/categorias', [
             'nombre' => 'Soportes',
-        ])->json();
+        ])->json('categoria');
 
         $this->putJson('/api/v1/categorias/'.$categoria['id'], [
             'nombre' => 'Accesorios',
         ])
             ->assertOk()
-            ->assertJsonPath('nombre', 'Accesorios');
+            ->assertJsonPath('mensaje', 'Categoría actualizada correctamente')
+            ->assertJsonPath('categoria.nombre', 'Accesorios');
 
         $this->assertDatabaseHas('categorias', [
             'id' => $categoria['id'],
@@ -58,11 +69,25 @@ class CategoriaApiTest extends TestCase
         ]);
     }
 
+    public function test_cannot_update_a_category_with_a_duplicate_name(): void
+    {
+        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes']);
+        $categoria = $this->postJson('/api/v1/categorias', [
+            'nombre' => 'Accesorios',
+        ])->json('categoria');
+
+        $this->putJson('/api/v1/categorias/'.$categoria['id'], [
+            'nombre' => 'Soportes',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('errores.nombre.0', 'Ya existe una categoría con ese nombre.');
+    }
+
     public function test_can_delete_a_category(): void
     {
         $categoria = $this->postJson('/api/v1/categorias', [
             'nombre' => 'Soportes',
-        ])->json();
+        ])->json('categoria');
 
         $this->deleteJson('/api/v1/categorias/'.$categoria['id'])
             ->assertOk()

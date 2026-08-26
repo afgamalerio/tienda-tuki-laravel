@@ -25,7 +25,7 @@ class StoreCategoriaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required|string',
+            'nombre' => 'required|string|unique:categorias,nombre',
         ];
     }
 
@@ -43,6 +43,7 @@ class StoreCategoriaRequest extends FormRequest
     {
         return [
             'nombre.required' => 'El nombre de la categoría es obligatorio.',
+            'nombre.unique' => 'Ya existe una categoría con ese nombre.',
         ];
     }
 }

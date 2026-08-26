@@ -4,6 +4,8 @@ use App\Exceptions\StockInsuficienteException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,5 +29,17 @@ return Application::configure(basePath: dirname(__DIR__))
                     ],
                 ],
             ], 422);
+        });
+
+        $exceptions->render(function (UnauthorizedHttpException $exception) {
+            return response()->json([
+                'mensaje' => 'El token no existe, es inválido o expiró.',
+            ], 401);
+        });
+
+        $exceptions->render(function (JWTException $exception) {
+            return response()->json([
+                'mensaje' => 'El token no existe, es inválido o expiró.',
+            ], 401);
         });
     })->create();

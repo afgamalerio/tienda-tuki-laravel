@@ -59,7 +59,14 @@ class CarritoController extends Controller
     public function update(UpdateCartItemRequest $request, int $productoId)
     {
         $carrito = $this->obtenerCarrito($request);
-        $producto = Producto::findOrFail($productoId);
+        $producto = Producto::find($productoId);
+
+        if (!$producto) {
+            return response()->json([
+                'mensaje' => 'Producto no encontrado',
+            ], 404);
+        }
+
         $item = $carrito->items->firstWhere('producto_id', $productoId);
 
         if (!$item) {
@@ -80,7 +87,15 @@ class CarritoController extends Controller
     public function destroy(Request $request, int $productoId)
     {
         $carrito = $this->obtenerCarrito($request);
-        $carrito->items()->where('producto_id', $productoId)->delete();
+        $item = $carrito->items()->where('producto_id', $productoId)->first();
+
+        if (!$item) {
+            return response()->json([
+                'mensaje' => 'El producto no está en el carrito',
+            ], 404);
+        }
+
+        $item->delete();
 
         return response()->json([
             'mensaje' => 'Producto eliminado del carrito',
@@ -138,7 +153,8 @@ class CarritoController extends Controller
             $resumen = CartSummaryData::fromCart($carrito);
             $datos = CheckoutData::fromArray($request->validated());
             $pedido = Pedido::create([
-                'session_id' => $request->header('X-Session-Id', 'guest'),
+                'user_id' => $carrito->user_id,
+                'session_id' => $carrito->session_id,
                 'subtotal' => $resumen->subtotal,
                 'impuestos' => $resumen->impuestos,
                 'envio' => $resumen->envio,
@@ -172,9 +188,12 @@ class CarritoController extends Controller
 
     private function obtenerCarrito(Request $request): Carrito
     {
-        $sessionId = $request->header('X-Session-Id', 'guest');
+        $usuario = $request->user('api');
 
-        return Carrito::firstOrCreate(['session_id' => $sessionId]);
+        return Carrito::firstOrCreate(
+            ['user_id' => $usuario->id],
+            ['session_id' => 'usuario-'.$usuario->id]
+        );
     }
 
     private function validarStock(Producto $producto, int $cantidad): void

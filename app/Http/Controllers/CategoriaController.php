@@ -28,14 +28,20 @@ class CategoriaController extends Controller
             ], 404);
         }
 
-        return response()->json($categoria);
+        return response()->json([
+            'mensaje' => 'Categoría encontrada',
+            'categoria' => $categoria,
+        ]);
     }
 
     public function store(StoreCategoriaRequest $request)
     {
         $categoria = Categoria::create($request->validated());
 
-        return response()->json($categoria, 201);
+        return response()->json([
+            'mensaje' => 'Categoría creada correctamente',
+            'categoria' => $categoria,
+        ], 201);
     }
 
     public function update(UpdateCategoriaRequest $request, int $id)
@@ -48,7 +54,10 @@ class CategoriaController extends Controller
 
         $categoria->update($request->validated());
 
-        return response()->json($categoria);
+        return response()->json([
+            'mensaje' => 'Categoría actualizada correctamente',
+            'categoria' => $categoria,
+        ]);
     }
 
     public function destroy(int $id)
