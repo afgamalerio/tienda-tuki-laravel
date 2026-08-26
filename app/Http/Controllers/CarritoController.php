@@ -146,7 +146,8 @@ class CarritoController extends Controller
             $resumen = CartSummaryData::fromCart($carrito);
             $datos = CheckoutData::fromArray($request->validated());
             $pedido = Pedido::create([
-                'session_id' => $request->header('X-Session-Id', 'guest'),
+                'user_id' => $carrito->user_id,
+                'session_id' => $carrito->session_id,
                 'subtotal' => $resumen->subtotal,
                 'impuestos' => $resumen->impuestos,
                 'envio' => $resumen->envio,
@@ -180,9 +181,12 @@ class CarritoController extends Controller
 
     private function obtenerCarrito(Request $request): Carrito
     {
-        $sessionId = $request->header('X-Session-Id', 'guest');
+        $usuario = $request->user('api');
 
-        return Carrito::firstOrCreate(['session_id' => $sessionId]);
+        return Carrito::firstOrCreate(
+            ['user_id' => $usuario->id],
+            ['session_id' => 'usuario-'.$usuario->id]
+        );
     }
 
     private function validarStock(Producto $producto, int $cantidad): void

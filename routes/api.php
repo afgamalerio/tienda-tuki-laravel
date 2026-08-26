@@ -36,13 +36,15 @@ Route::prefix('v1')->group(function () {
     Route::get('/usuarios', [UsuarioController::class, 'index'])
         ->name('api.usuarios');
 
-    // Rutas del carrito y checkout
-    Route::get('/carrito', [CarritoController::class, 'index']);
-    Route::post('/carrito/items', [CarritoController::class, 'store']);
-    Route::put('/carrito/items/{productoId}', [CarritoController::class, 'update']);
-    Route::delete('/carrito/items/{productoId}', [CarritoController::class, 'destroy']);
-    Route::delete('/carrito', [CarritoController::class, 'clear']);
-    Route::get('/carrito/resumen', [CarritoController::class, 'summary']);
-    Route::get('/checkout/revisar', [CarritoController::class, 'review']);
-    Route::post('/checkout/confirmar', [CarritoController::class, 'confirm']);
+    Route::middleware('jwt.auth')->group(function () {
+        // Rutas del carrito y checkout
+        Route::get('/carrito', [CarritoController::class, 'index']);
+        Route::post('/carrito/items', [CarritoController::class, 'store']);
+        Route::put('/carrito/items/{productoId}', [CarritoController::class, 'update']);
+        Route::delete('/carrito/items/{productoId}', [CarritoController::class, 'destroy']);
+        Route::delete('/carrito', [CarritoController::class, 'clear']);
+        Route::get('/carrito/resumen', [CarritoController::class, 'summary']);
+        Route::get('/checkout/revisar', [CarritoController::class, 'review']);
+        Route::post('/checkout/confirmar', [CarritoController::class, 'confirm']);
+    });
 });

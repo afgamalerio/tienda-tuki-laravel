@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pedido extends Model
 {
     protected $fillable = [
+        'user_id',
         'session_id',
         'estado',
         'subtotal',
@@ -28,6 +30,11 @@ class Pedido extends Model
             'envio' => 'decimal:2',
             'total' => 'decimal:2',
         ];
+    }
+
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function items(): HasMany
