@@ -80,7 +80,15 @@ class CarritoController extends Controller
     public function destroy(Request $request, int $productoId)
     {
         $carrito = $this->obtenerCarrito($request);
-        $carrito->items()->where('producto_id', $productoId)->delete();
+        $item = $carrito->items()->where('producto_id', $productoId)->first();
+
+        if (!$item) {
+            return response()->json([
+                'mensaje' => 'El producto no está en el carrito',
+            ], 404);
+        }
+
+        $item->delete();
 
         return response()->json([
             'mensaje' => 'Producto eliminado del carrito',

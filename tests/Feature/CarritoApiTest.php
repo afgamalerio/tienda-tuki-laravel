@@ -54,6 +54,17 @@ class CarritoApiTest extends TestCase
             ->assertJsonCount(0, 'carrito.items');
     }
 
+    public function test_returns_not_found_when_removing_a_product_not_in_the_cart(): void
+    {
+        $producto = $this->createProduct();
+
+        $this->deleteJson('/api/v1/carrito/items/'.$producto->id, [], [
+            'X-Session-Id' => 'cliente-sin-producto',
+        ])
+            ->assertNotFound()
+            ->assertJsonPath('mensaje', 'El producto no está en el carrito');
+    }
+
     public function test_cannot_add_more_than_available_stock(): void
     {
         $producto = $this->createProduct(stock: 2);
