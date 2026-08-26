@@ -108,8 +108,8 @@ class CarritoApiTest extends TestCase
     public function test_each_user_can_only_access_their_own_cart(): void
     {
         $producto = $this->createProduct();
-        $usuarioUno = \App\Models\User::factory()->create();
-        $usuarioDos = \App\Models\User::factory()->create();
+        $usuarioUno = User::factory()->create();
+        $usuarioDos = User::factory()->create();
 
         $this->postJson('/api/v1/carrito/items', [
             'producto_id' => $producto->id,
