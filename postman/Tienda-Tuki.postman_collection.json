@@ -6,7 +6,7 @@
   },
   "variable": [
     { "key": "base_url", "value": "http://127.0.0.1:8000/api/v1" },
-    { "key": "session_id", "value": "cliente-1" },
+    { "key": "token", "value": "" },
     { "key": "categoria_id", "value": "1" },
     { "key": "producto_id", "value": "1" }
   ],
@@ -17,7 +17,7 @@
         { "name": "Listar categorias", "request": { "method": "GET", "url": "{{base_url}}/categorias" } },
         { "name": "Obtener categoria", "request": { "method": "GET", "url": "{{base_url}}/categorias/{{categoria_id}}" } },
         { "name": "Obtener categoria inexistente", "request": { "method": "GET", "url": "{{base_url}}/categorias/999999" }, "response": [{ "name": "Categoria no encontrada", "status": "Not Found", "code": 404, "body": "{\n  \"mensaje\": \"Categoría no encontrada\"\n}" }] },
-        { "name": "Crear categoria", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Accesorios\"\n}" }, "url": "{{base_url}}/categorias" }, "response": [{ "name": "Categoria creada", "status": "Created", "code": 201, "body": "{\n  \"id\": 1,\n  \"nombre\": \"Accesorios\"\n}" }] },
+        { "name": "Crear categoria", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Accesorios\"\n}" }, "url": "{{base_url}}/categorias" }, "response": [{ "name": "Categoria creada", "status": "Created", "code": 201, "body": "{\n  \"mensaje\": \"Categoría creada correctamente\",\n  \"categoria\": {\n    \"id\": 1,\n    \"nombre\": \"Accesorios\"\n  }\n}" }] },
         { "name": "Actualizar categoria", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Accesorios actualizados\"\n}" }, "url": "{{base_url}}/categorias/{{categoria_id}}" } },
         { "name": "Eliminar categoria", "request": { "method": "DELETE", "url": "{{base_url}}/categorias/{{categoria_id}}" } }
       ]
@@ -36,20 +36,20 @@
     {
       "name": "Carrito",
       "item": [
-        { "name": "Ver carrito", "request": { "method": "GET", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito" } },
-        { "name": "Agregar item", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-Id", "value": "{{session_id}}" }], "body": { "mode": "raw", "raw": "{\n  \"producto_id\": {{producto_id}},\n  \"cantidad\": 2\n}" }, "url": "{{base_url}}/carrito/items" }, "response": [{ "name": "Item agregado", "status": "Created", "code": 201, "body": "{\n  \"mensaje\": \"Producto agregado al carrito\",\n  \"carrito\": {\n    \"session_id\": \"cliente-1\"\n  }\n}" }] },
-        { "name": "Actualizar cantidad", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-Id", "value": "{{session_id}}" }], "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 3\n}" }, "url": "{{base_url}}/carrito/items/{{producto_id}}" } },
-        { "name": "Eliminar item", "request": { "method": "DELETE", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito/items/{{producto_id}}" } },
-        { "name": "Eliminar item inexistente", "request": { "method": "DELETE", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito/items/999999" }, "response": [{ "name": "Producto no está en el carrito", "status": "Not Found", "code": 404, "body": "{\n  \"mensaje\": \"El producto no está en el carrito\"\n}" }] },
-        { "name": "Vaciar carrito", "request": { "method": "DELETE", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito" } },
-        { "name": "Ver resumen", "request": { "method": "GET", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/carrito/resumen" }, "response": [{ "name": "Resumen calculado", "status": "OK", "code": 200, "body": "{\n  \"mensaje\": \"Resumen del carrito obtenido correctamente\",\n  \"resumen\": {\n    \"subtotal\": 17000,\n    \"impuestos\": 3570,\n    \"envio\": 5000,\n    \"total\": 25570\n  }\n}" }] }
+        { "name": "Ver carrito", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/carrito" } },
+        { "name": "Agregar item", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"producto_id\": {{producto_id}},\n  \"cantidad\": 2\n}" }, "url": "{{base_url}}/carrito/items" }, "response": [{ "name": "Item agregado", "status": "Created", "code": 201, "body": "{\n  \"mensaje\": \"Producto agregado al carrito\"\n}" }] },
+        { "name": "Actualizar cantidad", "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 3\n}" }, "url": "{{base_url}}/carrito/items/{{producto_id}}" } },
+        { "name": "Eliminar item", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/carrito/items/{{producto_id}}" } },
+        { "name": "Eliminar item inexistente", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/carrito/items/999999" }, "response": [{ "name": "Producto no está en el carrito", "status": "Not Found", "code": 404, "body": "{\n  \"mensaje\": \"El producto no está en el carrito\"\n}" }] },
+        { "name": "Vaciar carrito", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/carrito" } },
+        { "name": "Ver resumen", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/carrito/resumen" }, "response": [{ "name": "Resumen calculado", "status": "OK", "code": 200, "body": "{\n  \"mensaje\": \"Resumen del carrito obtenido correctamente\",\n  \"resumen\": {\n    \"subtotal\": 17000,\n    \"impuestos\": 3570,\n    \"envio\": 5000,\n    \"total\": 25570\n  }\n}" }] }
       ]
     },
     {
       "name": "Checkout",
       "item": [
-        { "name": "Revisar compra", "request": { "method": "GET", "header": [{ "key": "X-Session-Id", "value": "{{session_id}}" }], "url": "{{base_url}}/checkout/revisar" } },
-        { "name": "Confirmar compra", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-Id", "value": "{{session_id}}" }], "body": { "mode": "raw", "raw": "{\n  \"nombre_destinatario\": \"Ana Perez\",\n  \"direccion\": \"Calle 123\",\n  \"ciudad\": \"Buenos Aires\",\n  \"metodo_pago\": \"tarjeta\"\n}" }, "url": "{{base_url}}/checkout/confirmar" }, "response": [{ "name": "Compra confirmada", "status": "Created", "code": 201, "body": "{\n  \"mensaje\": \"Compra confirmada correctamente\",\n  \"pedido\": {\n    \"id\": 1,\n    \"total\": 25570,\n    \"estado\": \"confirmado\"\n  }\n}" }] }
+        { "name": "Revisar compra", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/checkout/revisar" } },
+        { "name": "Confirmar compra", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"nombre_destinatario\": \"Ana Perez\",\n  \"direccion\": \"Calle 123\",\n  \"ciudad\": \"Buenos Aires\",\n  \"metodo_pago\": \"tarjeta\"\n}" }, "url": "{{base_url}}/checkout/confirmar" }, "response": [{ "name": "Compra confirmada", "status": "Created", "code": 201, "body": "{\n  \"mensaje\": \"Compra confirmada correctamente\",\n  \"pedido\": {\n    \"id\": 1,\n    \"total\": 25570,\n    \"estado\": \"confirmado\"\n  }\n}" }] }
       ]
     }
   ]

@@ -59,7 +59,14 @@ class CarritoController extends Controller
     public function update(UpdateCartItemRequest $request, int $productoId)
     {
         $carrito = $this->obtenerCarrito($request);
-        $producto = Producto::findOrFail($productoId);
+        $producto = Producto::find($productoId);
+
+        if (!$producto) {
+            return response()->json([
+                'mensaje' => 'Producto no encontrado',
+            ], 404);
+        }
+
         $item = $carrito->items->firstWhere('producto_id', $productoId);
 
         if (!$item) {

@@ -77,6 +77,15 @@ class CarritoApiTest extends TestCase
             ->assertJsonPath('mensaje', 'El producto no está en el carrito');
     }
 
+    public function test_returns_not_found_when_updating_a_missing_product(): void
+    {
+        $this->putJson('/api/v1/carrito/items/999999', [
+            'cantidad' => 2,
+        ], $this->encabezadosAutenticados())
+            ->assertNotFound()
+            ->assertJsonPath('mensaje', 'Producto no encontrado');
+    }
+
     public function test_each_user_can_only_access_their_own_cart(): void
     {
         $producto = $this->createProduct();

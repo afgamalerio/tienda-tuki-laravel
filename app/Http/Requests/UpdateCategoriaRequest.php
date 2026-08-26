@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class UpdateCategoriaRequest extends FormRequest
 {
@@ -16,7 +17,11 @@ class UpdateCategoriaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required|string',
+            'nombre' => [
+                'required',
+                'string',
+                Rule::unique('categorias', 'nombre')->ignore($this->route('id')),
+            ],
         ];
     }
 
@@ -34,6 +39,7 @@ class UpdateCategoriaRequest extends FormRequest
     {
         return [
             'nombre.required' => 'El nombre de la categoría es obligatorio.',
+            'nombre.unique' => 'Ya existe una categoría con ese nombre.',
         ];
     }
 }
