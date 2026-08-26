@@ -91,4 +91,28 @@ class AuthApiTest extends TestCase
             ->assertJsonPath('usuario.email', 'ana@example.com')
             ->assertJsonMissingPath('usuario.password');
     }
+
+    public function test_can_refresh_a_valid_token(): void
+    {
+        $encabezados = $this->encabezadosAutenticados();
+
+        $this->postJson('/api/v1/auth/refresh', [], $encabezados)
+            ->assertOk()
+            ->assertJsonPath('mensaje', 'Token renovado correctamente')
+            ->assertJsonPath('tipo_token', 'Bearer')
+            ->assertJsonStructure(['token', 'expira_en']);
+    }
+
+    public function test_logout_invalidates_the_current_token(): void
+    {
+        $encabezados = $this->encabezadosAutenticados();
+
+        $this->postJson('/api/v1/auth/logout', [], $encabezados)
+            ->assertOk()
+            ->assertJsonPath('mensaje', 'Sesion cerrada correctamente');
+
+        $this->getJson('/api/v1/auth/me', $encabezados)
+            ->assertUnauthorized()
+            ->assertJsonPath('mensaje', 'El token no existe, es inválido o expiró.');
+    }
 }

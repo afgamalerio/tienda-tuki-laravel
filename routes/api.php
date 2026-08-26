@@ -39,6 +39,10 @@ Route::prefix('v1')->group(function () {
         ->name('api.usuarios');
 
     Route::middleware('jwt.auth')->group(function () {
+        Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+
         // Rutas del carrito y checkout
         Route::get('/carrito', [CarritoController::class, 'index']);
         Route::post('/carrito/items', [CarritoController::class, 'store']);
