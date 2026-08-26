@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CarritoController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 
 Route::get('/user', function (Request $request) {
@@ -12,6 +13,9 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
+
+    Route::post('/auth/register', [AuthController::class, 'register']);
+    Route::post('/auth/login', [AuthController::class, 'login']);
 
     //Rutas de la API para productos
     Route::get('/productos', [ProductoController::class, 'index']);
