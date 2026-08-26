@@ -11,8 +11,11 @@ abstract class TestCase extends BaseTestCase
     {
         $usuario ??= User::factory()->create();
 
+        /** @var \PHPOpenSourceSaver\JWTAuth\JWTGuard $guard */
+        $guard = auth('api');
+
         return [
-            'Authorization' => 'Bearer '.auth('api')->login($usuario),
+            'Authorization' => 'Bearer '.$guard->login($usuario),
         ];
     }
 }
