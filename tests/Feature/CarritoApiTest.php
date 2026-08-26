@@ -14,7 +14,8 @@ class CarritoApiTest extends TestCase
     public function test_cart_requires_authentication(): void
     {
         $this->getJson('/api/v1/carrito')
-            ->assertUnauthorized();
+            ->assertUnauthorized()
+            ->assertJsonPath('mensaje', 'El token no existe, es inválido o expiró.');
     }
 
     public function test_cart_rejects_an_invalid_token(): void
@@ -22,7 +23,8 @@ class CarritoApiTest extends TestCase
         $this->getJson('/api/v1/carrito', [
             'Authorization' => 'Bearer token-invalido',
         ])
-            ->assertUnauthorized();
+            ->assertUnauthorized()
+            ->assertJsonPath('mensaje', 'El token no existe, es inválido o expiró.');
     }
 
     public function test_can_add_a_product_and_get_its_summary(): void
