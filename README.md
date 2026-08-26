@@ -1,12 +1,29 @@
 # Tienda Tuki
 
+API REST de una tienda desarrollada con Laravel. Permite administrar productos
+y categorías, gestionar carritos asociados a usuarios autenticados y confirmar
+compras con control de stock y transacciones.
+
+## Índice
+
+- [Descripción](#descripción)
+- [Funcionalidades](#funcionalidades-implementadas)
+- [Tecnologías](#tecnologías-utilizadas)
+- [Instalación](#instalación-y-configuración)
+- [Ejecución](#ejecución-del-proyecto)
+- [Estructura](#estructura-del-proyecto)
+- [Endpoints](#endpoints-de-la-api)
+- [Pruebas](#forma-de-probar-el-proyecto)
+- [Seguridad](#seguridad-y-autenticación)
+
 ## Descripción
 
-Tienda Tuki es una aplicación web desarrollada con Laravel para gestionar los productos y categorías de una tienda.
+Tienda Tuki utiliza Laravel, PHP, MySQL y Eloquent ORM. La API está organizada
+bajo `/api/v1/` y devuelve respuestas JSON.
 
-El proyecto utiliza Laravel, PHP, MySQL y Eloquent ORM. Actualmente cuenta con una API REST organizada bajo `/api/v1/` que permite realizar operaciones CRUD sobre productos y categorías.
-
-Los productos se encuentran relacionados con categorías mediante relaciones Eloquent.
+El proyecto se enfoca en el backend y no incluye una interfaz de tienda para el
+cliente final. Los endpoints pueden consumirse desde Postman o desde cualquier
+aplicación frontend compatible con APIs REST.
 
 ---
 
@@ -44,9 +61,28 @@ Actualmente el proyecto permite:
 
 ### API
 
-La aplicación cuenta con endpoints REST para productos y categorías.
+La aplicación cuenta con endpoints REST para productos, categorías,
+autenticación, carrito y checkout. Las respuestas se realizan en formato JSON
+y utilizan códigos HTTP según el resultado de cada operación.
 
-Las respuestas de la API se realizan en formato JSON.
+### Autenticación
+
+- Registro y login mediante JWT.
+- Tokens Bearer con expiración configurable.
+- Consulta del usuario autenticado.
+- Renovación e invalidación de tokens.
+- Carritos y checkout protegidos por usuario.
+
+### Flujo principal
+
+1. Registrar un usuario en `/api/v1/auth/register` o iniciar sesión en
+    `/api/v1/auth/login`.
+2. Guardar el JWT recibido y enviarlo como Bearer Token en las rutas protegidas.
+3. Agregar productos al carrito mediante `/api/v1/carrito/items`.
+4. Revisar el resumen en `/api/v1/checkout/revisar` y confirmar la compra en
+    `/api/v1/checkout/confirmar`.
+5. El sistema verifica el stock, crea el pedido, descuenta las unidades y
+    vacía el carrito dentro de una transacción.
 
 ---
 
@@ -155,11 +191,13 @@ generará un error de validación porque esa variante ya existe.
 
 ## Tecnologías utilizadas
 
-- PHP 8.2
-- Laravel
+- PHP 8.2+
+- Laravel 12
 - MySQL
 - Eloquent ORM
 - Composer
+- PHPUnit
+- Postman
 - Git
 - GitHub
 
@@ -178,9 +216,9 @@ También se recomienda utilizar un entorno de desarrollo local como XAMPP para d
 
 ---
 
-# Instalación y configuración
+## Instalación y configuración
 
-## 1. Clonar el repositorio
+### 1. Clonar el repositorio
 
 Desde una terminal:
 
@@ -194,7 +232,7 @@ Luego ingresar a la carpeta del proyecto:
 cd tienda-tuki-laravel
 ```
 
-## 2. Instalar las dependencias
+### 2. Instalar las dependencias
 
 Ejecutar:
 
@@ -204,7 +242,7 @@ composer install
 
 Esto instala las dependencias definidas en `composer.json`.
 
-## 3. Configurar el archivo `.env`
+### 3. Configurar el archivo `.env`
 
 Laravel utiliza el archivo `.env` para configurar las variables de entorno.
 
@@ -227,9 +265,19 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
+Generar las claves de la aplicación y de JWT:
+
+```bash
+php artisan key:generate
+php artisan jwt:secret
+```
+
+`JWT_SECRET` se guarda únicamente en `.env`. No debe copiarse al repositorio,
+compartirse públicamente ni incluirse en la colección de Postman.
+
 El valor de `DB_PASSWORD` debe modificarse si el usuario de MySQL tiene una contraseña configurada.
 
-## 4. Crear la base de datos
+### 4. Crear la base de datos
 
 Crear una base de datos MySQL llamada:
 
@@ -239,15 +287,7 @@ tienda-tuki
 
 Puede hacerse desde phpMyAdmin, MySQL Workbench o la herramienta de administración de MySQL utilizada.
 
-## 5. Generar la clave de Laravel
-
-Ejecutar:
-
-```bash
-php artisan key:generate
-```
-
-## 6. Ejecutar las migraciones
+### 5. Ejecutar las migraciones
 
 Para crear las tablas:
 
@@ -257,7 +297,7 @@ php artisan migrate
 
 Las migraciones crean las tablas necesarias para el funcionamiento de la aplicación.
 
-## 7. Cargar los datos iniciales
+### 6. Cargar los datos iniciales
 
 Ejecutar:
 
@@ -277,7 +317,7 @@ php artisan migrate:fresh --seed
 
 ---
 
-# Ejecución del proyecto
+## Ejecución del proyecto
 
 Para iniciar el servidor de desarrollo de Laravel:
 
@@ -291,9 +331,15 @@ Por defecto, la aplicación estará disponible en:
 http://127.0.0.1:8000
 ```
 
+En otra terminal puede iniciarse el entorno completo definido por Composer:
+
+```bash
+composer run dev
+```
+
 ---
 
-# Estructura del proyecto
+## Estructura del proyecto
 
 El proyecto utiliza la estructura estándar de Laravel.
 
@@ -436,7 +482,7 @@ del usuario autenticado.
 
 ---
 
-# Flujo general de una petición
+## Flujo general de una petición
 
 La API sigue un flujo basado en la arquitectura de Laravel:
 
@@ -462,7 +508,7 @@ Los modelos Eloquent se encargan de interactuar con la base de datos y gestionar
 
 ---
 
-# Endpoints de la API
+## Endpoints de la API
 
 ## Principios REST
 
@@ -479,6 +525,23 @@ los verbos HTTP expresan la operación:
 Las respuestas utilizan códigos HTTP para comunicar el resultado: `200` para
 operaciones correctas, `201` para recursos creados, `404` cuando no existe el
 recurso y `422` cuando los datos no superan la validación.
+
+## Autenticación
+
+| Método | Endpoint | Autenticación |
+| --- | --- | --- |
+| `POST` | `/api/v1/auth/register` | Pública |
+| `POST` | `/api/v1/auth/login` | Pública |
+| `GET` | `/api/v1/auth/me` | JWT requerido |
+| `POST` | `/api/v1/auth/refresh` | JWT requerido |
+| `POST` | `/api/v1/auth/logout` | JWT requerido |
+| `GET` | `/api/user` | JWT requerido |
+
+Para las rutas protegidas se debe enviar:
+
+```http
+Authorization: Bearer <token>
+```
 
 ## Carrito y checkout
 
@@ -620,7 +683,7 @@ DELETE /api/v1/categorias/{id}
 
 ---
 
-# Productos
+## Productos
 
 ### Listar productos
 
@@ -682,9 +745,21 @@ DELETE /api/v1/productos/{id}
 
 ---
 
-# Forma de probar el proyecto
+## Forma de probar el proyecto
 
-## 1. Iniciar Laravel
+### Pruebas automatizadas
+
+Ejecutar:
+
+```bash
+php artisan test
+```
+
+Las pruebas utilizan SQLite en memoria para mantener los casos aislados. La
+aplicación y las migraciones de desarrollo utilizan MySQL según la configuración
+del archivo `.env`.
+
+### 1. Iniciar Laravel
 
 Ejecutar:
 
@@ -692,9 +767,14 @@ Ejecutar:
 php artisan serve
 ```
 
-## 2. Consultar los endpoints
+### 2. Consultar los endpoints
 
 Los endpoints pueden probarse mediante una herramienta para realizar solicitudes HTTP, como Postman, o cualquier cliente compatible con APIs REST.
+
+La colección disponible en
+`postman/Tienda-Tuki.postman_collection.json` incluye registro, login, captura
+automática del token, carrito, checkout y ejemplos de respuestas `401`, `404` y
+`422`.
 
 También se pueden consultar los endpoints `GET` directamente desde el navegador.
 
@@ -712,7 +792,7 @@ http://127.0.0.1:8000/api/v1/categorias
 
 Para las operaciones `POST`, `PUT` y `DELETE` se debe utilizar una herramienta que permita enviar solicitudes HTTP.
 
-## 3. Probar las validaciones
+### 3. Probar las validaciones
 
 Las validaciones pueden comprobarse enviando datos incorrectos mediante una herramienta HTTP.
 
@@ -733,7 +813,7 @@ La API responderá con código `422` y los mensajes de validación correspondien
 
 También puede probarse la regla `UniqueProductVariant` intentando crear o actualizar un producto utilizando una combinación de nombre y color que ya exista.
 
-## 4. Verificar la base de datos
+### 4. Verificar la base de datos
 
 Los datos creados o modificados mediante la API se almacenan en la base de datos MySQL configurada en el archivo `.env`.
 
@@ -745,7 +825,7 @@ php artisan tinker
 
 ---
 
-# Comandos principales
+## Comandos principales
 
 ### Iniciar el servidor
 
@@ -785,7 +865,7 @@ php artisan route:list
 
 ---
 
-# Seguridad y autenticación
+## Seguridad y autenticación
 
 La API utiliza JSON Web Tokens (JWT). Un token tiene la estructura:
 
@@ -840,6 +920,17 @@ Sin token, con token inválido o con token expirado la API responde `401`.
 Los datos inválidos responden `422` y los recursos inexistentes responden
 `404`.
 
+### Códigos HTTP
+
+| Código | Significado |
+| --- | --- |
+| `200` | Operación exitosa |
+| `201` | Recurso creado |
+| `401` | Token ausente, inválido o expirado |
+| `404` | Recurso inexistente |
+| `422` | Datos inválidos o regla de negocio incumplida |
+| `500` | Error interno del servidor |
+
 ### CSRF, XSS y SQL Injection
 
 La API autenticada con Bearer Token es stateless y no depende de cookies de
@@ -858,6 +949,10 @@ JWT, carrito, checkout y datos de pedidos.
 La colección de Postman contiene ejemplos de registro, login, errores `401`,
 errores `404`, validaciones `422` y peticiones protegidas.
 
-# Autora
+Para probar un token expirado, se puede establecer temporalmente un valor bajo
+en `JWT_TTL`, generar un token nuevo con login y enviar la petición una vez
+superado ese tiempo. No se deben guardar tokens reales ni secretos en Git.
+
+## Autora
 
 **Anahi Fernández Gamalerio**
