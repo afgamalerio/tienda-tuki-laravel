@@ -7,10 +7,22 @@
   "variable": [
     { "key": "base_url", "value": "http://127.0.0.1:8000/api/v1" },
     { "key": "token", "value": "" },
+    { "key": "email", "value": "ana@example.com" },
     { "key": "categoria_id", "value": "1" },
     { "key": "producto_id", "value": "1" }
   ],
   "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        { "name": "Registro exitoso", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Ana Perez\",\n  \"email\": \"{{email}}\",\n  \"password\": \"password-segura\",\n  \"password_confirmation\": \"password-segura\"\n}" }, "url": "{{base_url}}/auth/register" }, "response": [{ "name": "Usuario registrado", "status": "Created", "code": 201, "body": "{\n  \"mensaje\": \"Usuario registrado correctamente\",\n  \"token\": \"eyJ...\",\n  \"tipo_token\": \"Bearer\"\n}" }] },
+        { "name": "Login exitoso", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"password-segura\"\n}" }, "url": "{{base_url}}/auth/login" }, "response": [{ "name": "Login correcto", "status": "OK", "code": 200, "body": "{\n  \"mensaje\": \"Login realizado correctamente\",\n  \"token\": \"eyJ...\",\n  \"tipo_token\": \"Bearer\"\n}" }] },
+        { "name": "Login con credenciales incorrectas", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"incorrecta\"\n}" }, "url": "{{base_url}}/auth/login" }, "response": [{ "name": "Credenciales incorrectas", "status": "Unauthorized", "code": 401, "body": "{\n  \"mensaje\": \"Las credenciales son incorrectas\"\n}" }] },
+        { "name": "Registro con datos inválidos", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"\",\n  \"email\": \"correo-invalido\",\n  \"password\": \"corta\",\n  \"password_confirmation\": \"distinta\"\n}" }, "url": "{{base_url}}/auth/register" }, "response": [{ "name": "Error de validación", "status": "Unprocessable Entity", "code": 422, "body": "{\n  \"mensaje\": \"Error de validación\",\n  \"errores\": {\n    \"email\": [\"El email debe tener un formato válido.\"],\n    \"password\": [\"La contraseña debe tener al menos 8 caracteres.\"]\n  }\n}" }] },
+        { "name": "Carrito sin JWT", "request": { "method": "GET", "url": "{{base_url}}/carrito" }, "response": [{ "name": "Token requerido", "status": "Unauthorized", "code": 401, "body": "{\n  \"message\": \"Unauthenticated.\"\n}" }] },
+        { "name": "Carrito con JWT inválido", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer token-invalido" }], "url": "{{base_url}}/carrito" }, "response": [{ "name": "Token inválido", "status": "Unauthorized", "code": 401, "body": "{\n  \"message\": \"Token is invalid\"\n}" }] }
+      ]
+    },
     {
       "name": "Categorias",
       "item": [
