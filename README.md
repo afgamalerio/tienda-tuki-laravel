@@ -813,7 +813,11 @@ configurada mediante `JWT_TTL`.
 
 ### Rutas protegidas
 
-Requieren JWT válido todas las rutas de carrito y checkout:
+Requieren JWT válido todas las rutas de carrito y checkout. La protección usa
+el middleware oficial `jwt.auth` provisto por `php-open-source-saver/jwt-auth`,
+que verifica el Bearer Token, su firma, expiración e identificación del
+usuario. No se implementa criptografía JWT manual ni se duplica el middleware
+de la biblioteca.
 
 - `/api/v1/carrito`
 - `/api/v1/carrito/items`
