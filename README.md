@@ -811,6 +811,17 @@ guardan mediante hashing bcrypt y nunca se devuelven en JSON. El login responde
 `401` si las credenciales son incorrectas y entrega un token con expiración
 configurada mediante `JWT_TTL`.
 
+El ciclo de vida también incluye:
+
+```http
+GET  /api/v1/auth/me
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+```
+
+`me` devuelve los datos públicos del usuario autenticado, `refresh` renueva un
+token válido y `logout` lo invalida mediante la blacklist de JWT.
+
 ### Rutas protegidas
 
 Requieren JWT válido todas las rutas de carrito y checkout. La protección usa
