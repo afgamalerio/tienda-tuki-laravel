@@ -118,7 +118,9 @@ class CarritoController extends Controller
     {
         return response()->json([
             'mensaje' => 'Resumen del carrito obtenido correctamente',
-            'resumen' => CartSummaryData::fromCart($this->obtenerCarrito($request))->toArray(),
+            'resumen' => CartSummaryData::fromCart(
+                $this->obtenerCarrito($request)->load('items.producto')
+            )->toArray(),
         ]);
     }
 
