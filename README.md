@@ -771,6 +771,17 @@ Las pruebas utilizan SQLite en memoria para mantener los casos aislados. La
 aplicación y las migraciones de desarrollo utilizan MySQL según la configuración
 del archivo `.env`.
 
+La suite incluye pruebas unitarias para el cálculo del carrito y el contexto de
+la excepción de stock, además de Feature Tests para autenticación, permisos,
+catálogo, carrito y checkout. Las factories de usuarios, categorías y productos
+generan datos relacionados y los seeders preparan datos iniciales para el
+entorno de desarrollo.
+
+Actualmente el checkout no depende de un proveedor externo de pagos o envíos,
+por lo que no se agrega un mock artificial. Cuando se incorpore una integración
+externa, deberá abstraerse mediante un contrato y simularse en los tests para
+evitar llamadas reales.
+
 ### 1. Iniciar Laravel
 
 Ejecutar:
@@ -808,6 +819,34 @@ http://127.0.0.1:8000/api/v1/categorias
 ```
 
 Para las operaciones `POST`, `PUT` y `DELETE` se debe utilizar una herramienta que permita enviar solicitudes HTTP.
+
+## Despliegue en producción
+
+El proyecto queda preparado para desplegarse en un servicio compatible con PHP
+8.2, Composer y MySQL. Como mínimo, el entorno de producción debe configurar:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=<clave-generada>
+DB_CONNECTION=mysql
+JWT_SECRET=<secreto-generado>
+```
+
+Después de configurar las variables de entorno, ejecutar:
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+La URL pública queda pendiente de definir porque requiere seleccionar un
+proveedor de hosting y configurar sus credenciales. Una vez desplegada, debe
+documentarse aquí la URL base de la API y verificarse `/up`, el login JWT y un
+flujo completo de carrito y checkout.
 
 ### 3. Probar las validaciones
 

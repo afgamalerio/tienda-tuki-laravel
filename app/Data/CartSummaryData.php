@@ -31,9 +31,9 @@ class CartSummaryData
             ];
         })->values()->all();
 
-        $subtotal = round(array_sum(array_column($items, 'subtotal')), 2);
+        $subtotal = (float) round(array_sum(array_column($items, 'subtotal')), 2);
         $impuestos = round($subtotal * 0.21, 2);
-        $envio = $subtotal >= 50000 || $subtotal === 0 ? 0.0 : 5000.0;
+        $envio = ($subtotal >= 50000 || $subtotal === 0.0) ? 0.0 : 5000.0;
 
         return new self(
             $items,
