@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Data\CartSummaryData;
 use App\Data\CheckoutData;
+use App\Contracts\ProcesadorPago;
 use App\Exceptions\StockInsuficienteException;
 use App\Http\Requests\AddCartItemRequest;
 use App\Http\Requests\CheckoutRequest;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\DB;
 
 class CarritoController extends Controller
 {
+    public function __construct(private readonly ProcesadorPago $procesadorPago)
+    {
+    }
+
     public function index(Request $request)
     {
         return response()->json([
@@ -163,6 +168,8 @@ class CarritoController extends Controller
                 'total' => $resumen->total,
                 ...$datos->toArray(),
             ]);
+
+            $this->procesadorPago->cobrar($pedido);
 
             foreach ($carrito->items as $item) {
                 $producto = Producto::lockForUpdate()->findOrFail($item->producto_id);

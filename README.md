@@ -777,10 +777,11 @@ catálogo, carrito y checkout. Las factories de usuarios, categorías y producto
 generan datos relacionados y los seeders preparan datos iniciales para el
 entorno de desarrollo.
 
-Actualmente el checkout no depende de un proveedor externo de pagos o envíos,
-por lo que no se agrega un mock artificial. Cuando se incorpore una integración
-externa, deberá abstraerse mediante un contrato y simularse en los tests para
-evitar llamadas reales.
+El checkout utiliza el contrato `ProcesadorPago`, con una implementación local
+simulada por defecto. El test `ProcesadorPagoTest` reemplaza ese contrato por un
+mock para verificar la operación sin llamadas a servicios reales. Al incorporar
+un proveedor externo, debe conservarse esta abstracción y sustituir la
+implementación simulada mediante el contenedor de Laravel.
 
 ### 1. Iniciar Laravel
 
