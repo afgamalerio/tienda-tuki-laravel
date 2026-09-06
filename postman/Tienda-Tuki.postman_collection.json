@@ -7,6 +7,7 @@
   "variable": [
     { "key": "base_url", "value": "http://127.0.0.1:8000/api/v1" },
     { "key": "token", "value": "" },
+    { "key": "admin_token", "value": "" },
     { "key": "token_expirado", "value": "" },
     { "key": "email", "value": "ana@example.com" },
     { "key": "categoria_id", "value": "1" },
@@ -18,6 +19,7 @@
       "item": [
         { "name": "Registro exitoso", "event": [{ "listen": "test", "script": { "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Ana Perez\",\n  \"email\": \"{{email}}\",\n  \"password\": \"password-segura\",\n  \"password_confirmation\": \"password-segura\"\n}" }, "url": "{{base_url}}/auth/register" }, "response": [{ "name": "Usuario registrado", "status": "Created", "code": 201, "body": "{\n  \"mensaje\": \"Usuario registrado correctamente\",\n  \"token\": \"eyJ...\",\n  \"tipo_token\": \"Bearer\"\n}" }] },
         { "name": "Login exitoso", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Responde 200', function () { pm.response.to.have.status(200); });", "pm.test('Devuelve un token', function () { pm.expect(pm.response.json().token).to.be.a('string'); });", "pm.collectionVariables.set('token', pm.response.json().token);"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"password-segura\"\n}" }, "url": "{{base_url}}/auth/login" }, "response": [{ "name": "Login correcto", "status": "OK", "code": 200, "body": "{\n  \"mensaje\": \"Login realizado correctamente\",\n  \"token\": \"eyJ...\",\n  \"tipo_token\": \"Bearer\"\n}" }] },
+        { "name": "Login administrador", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Responde 200', function () { pm.response.to.have.status(200); });", "pm.test('Devuelve token de administrador', function () { pm.expect(pm.response.json().token).to.be.a('string'); });", "pm.collectionVariables.set('admin_token', pm.response.json().token);"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password\"\n}" }, "url": "{{base_url}}/auth/login" }, "response": [{ "name": "Login administrador correcto", "status": "OK", "code": 200 }] },
         { "name": "Login con credenciales incorrectas", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"incorrecta\"\n}" }, "url": "{{base_url}}/auth/login" }, "response": [{ "name": "Credenciales incorrectas", "status": "Unauthorized", "code": 401, "body": "{\n  \"mensaje\": \"Las credenciales son incorrectas\"\n}" }] },
         { "name": "Consultar usuario autenticado", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/auth/me" } },
         { "name": "Renovar token", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{base_url}}/auth/refresh" } },
@@ -31,6 +33,7 @@
     },
     {
       "name": "Categorias",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
       "item": [
         { "name": "Listar categorias", "request": { "method": "GET", "url": "{{base_url}}/categorias" } },
         { "name": "Obtener categoria", "request": { "method": "GET", "url": "{{base_url}}/categorias/{{categoria_id}}" } },
@@ -42,6 +45,7 @@
     },
     {
       "name": "Productos",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
       "item": [
         { "name": "Listar productos", "request": { "method": "GET", "url": "{{base_url}}/productos" } },
         { "name": "Obtener producto", "request": { "method": "GET", "url": "{{base_url}}/productos/{{producto_id}}" } },

@@ -76,7 +76,8 @@ y utilizan códigos HTTP según el resultado de cada operación.
 Los usuarios registrados desde la API reciben el rol `cliente`. Las operaciones
 de creación, modificación y eliminación de productos y categorías requieren un
 JWT válido y el rol `admin`. El usuario creado por el seeder de desarrollo
-(`test@example.com`) tiene ese rol para poder probar dichas operaciones.
+(`test@example.com`, contraseña `password`) tiene ese rol para poder probar
+dichas operaciones.
 
 ### Flujo principal
 
@@ -786,6 +787,11 @@ La colección disponible en
 `postman/Tienda-Tuki.postman_collection.json` incluye registro, login, captura
 automática del token, carrito, checkout y ejemplos de respuestas `401`, `404` y
 `422`.
+
+Para probar las operaciones administrativas desde Postman, ejecutar primero
+`Autenticación > Login administrador`. La solicitud guarda el token en
+`admin_token`, que se hereda automáticamente en las carpetas `Categorias` y
+`Productos`.
 
 También se pueden consultar los endpoints `GET` directamente desde el navegador.
 
