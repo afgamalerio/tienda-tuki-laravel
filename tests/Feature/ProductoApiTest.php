@@ -178,6 +178,19 @@ class ProductoApiTest extends TestCase
             ->assertCreated();
     }
 
+    public function test_product_validation_rejects_oversized_fields(): void
+    {
+        $datos = [
+            ...$this->productData(),
+            'nombre' => str_repeat('a', 256),
+            'categoria_id' => Categoria::factory()->create()->id,
+        ];
+
+        $this->postJson('/api/v1/productos', $datos, $this->encabezadosAdmin())
+            ->assertUnprocessable()
+            ->assertJsonStructure(['errores' => ['nombre']]);
+    }
+
     public function test_cannot_delete_a_product_present_in_a_cart(): void
     {
         $producto = Producto::factory()->create();

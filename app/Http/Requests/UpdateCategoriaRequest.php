@@ -20,6 +20,7 @@ class UpdateCategoriaRequest extends FormRequest
             'nombre' => [
                 'required',
                 'string',
+                'max:255',
                 Rule::unique('categorias', 'nombre')->ignore($this->route('id')),
             ],
         ];

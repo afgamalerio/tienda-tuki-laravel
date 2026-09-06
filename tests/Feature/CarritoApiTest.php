@@ -209,6 +209,18 @@ class CarritoApiTest extends TestCase
             ->assertJsonPath('pedido.items.0.precio_unitario', '150.00');
     }
 
+    public function test_cart_rejects_excessive_quantities(): void
+    {
+        $producto = $this->createProduct(stock: 2000);
+
+        $this->postJson('/api/v1/carrito/items', [
+            'producto_id' => $producto->id,
+            'cantidad' => 1001,
+        ], $this->encabezadosAutenticados())
+            ->assertUnprocessable()
+            ->assertJsonStructure(['errores' => ['cantidad']]);
+    }
+
     private function createProduct(float $price = 8500, int $stock = 10): Producto
     {
         $categoria = Categoria::create(['nombre' => uniqid('categoria_')]);
