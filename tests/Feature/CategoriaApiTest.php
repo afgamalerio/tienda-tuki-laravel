@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Categoria;
+use App\Models\Producto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -127,5 +129,17 @@ class CategoriaApiTest extends TestCase
 
         $this->postJson('/api/v1/categorias', $datos, $this->encabezadosAdmin())
             ->assertCreated();
+    }
+
+    public function test_cannot_delete_a_category_with_products(): void
+    {
+        $categoria = Categoria::factory()->create();
+        Producto::factory()->create(['categoria_id' => $categoria->id]);
+
+        $this->deleteJson('/api/v1/categorias/'.$categoria->id, [], $this->encabezadosAdmin())
+            ->assertStatus(409)
+            ->assertJsonPath('mensaje', 'No se puede eliminar una categoría con productos asociados.');
+
+        $this->assertDatabaseHas('categorias', ['id' => $categoria->id]);
     }
 }

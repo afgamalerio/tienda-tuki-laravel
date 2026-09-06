@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Categoria;
+use App\Models\Carrito;
 use App\Models\Producto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -175,6 +176,25 @@ class ProductoApiTest extends TestCase
 
         $this->postJson('/api/v1/productos', $datos, $this->encabezadosAdmin())
             ->assertCreated();
+    }
+
+    public function test_cannot_delete_a_product_present_in_a_cart(): void
+    {
+        $producto = Producto::factory()->create();
+        $carrito = Carrito::create([
+            'session_id' => 'carrito-prueba',
+        ]);
+        $carrito->items()->create([
+            'producto_id' => $producto->id,
+            'cantidad' => 1,
+            'precio_unitario' => $producto->precio,
+        ]);
+
+        $this->deleteJson('/api/v1/productos/'.$producto->id, [], $this->encabezadosAdmin())
+            ->assertStatus(409)
+            ->assertJsonPath('mensaje', 'No se puede eliminar un producto presente en un carrito.');
+
+        $this->assertDatabaseHas('productos', ['id' => $producto->id]);
     }
 
     private function productData(): array

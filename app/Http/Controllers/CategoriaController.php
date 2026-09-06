@@ -68,6 +68,12 @@ class CategoriaController extends Controller
             return response()->json(['mensaje' => 'Categoría no encontrada'], 404);
         }
 
+        if ($categoria->productos()->exists()) {
+            return response()->json([
+                'mensaje' => 'No se puede eliminar una categoría con productos asociados.',
+            ], 409);
+        }
+
         $categoria->delete();
 
         return response()->json(['mensaje' => 'Categoría eliminada correctamente']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\CarritoItem;
 use App\Models\Producto;
 
 class ProductoController extends Controller
@@ -68,6 +69,12 @@ class ProductoController extends Controller
             return response()->json([
                 'mensaje' => 'Producto no encontrado'
             ], 404);
+        }
+
+        if (CarritoItem::where('producto_id', $producto->id)->exists()) {
+            return response()->json([
+                'mensaje' => 'No se puede eliminar un producto presente en un carrito.',
+            ], 409);
         }
 
         $producto->delete();
