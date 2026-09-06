@@ -170,6 +170,18 @@ class CarritoApiTest extends TestCase
         $this->assertDatabaseCount('carrito_items', 0);
     }
 
+    public function test_cannot_confirm_an_empty_cart(): void
+    {
+        $this->postJson('/api/v1/checkout/confirmar', [
+            'nombre_destinatario' => 'Ana Pérez',
+            'direccion' => 'Calle 123',
+            'ciudad' => 'Buenos Aires',
+            'metodo_pago' => 'tarjeta',
+        ], $this->encabezadosAutenticados())
+            ->assertUnprocessable()
+            ->assertJsonPath('mensaje', 'No se puede confirmar un carrito vacío');
+    }
+
     private function createProduct(float $price = 8500, int $stock = 10): Producto
     {
         $categoria = Categoria::create(['nombre' => uniqid('categoria_')]);

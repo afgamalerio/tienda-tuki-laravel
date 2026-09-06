@@ -134,16 +134,16 @@ class CarritoController extends Controller
 
     public function confirm(CheckoutRequest $request)
     {
-        $carrito = $this->obtenerCarrito($request)->load('items.producto');
+        $pedido = DB::transaction(function () use ($request): ?Pedido {
+            $carrito = $this->obtenerCarrito($request);
+            $carrito = Carrito::whereKey($carrito->id)
+                ->lockForUpdate()
+                ->with('items.producto')
+                ->firstOrFail();
 
-        if ($carrito->items->isEmpty()) {
-            return response()->json([
-                'mensaje' => 'No se puede confirmar un carrito vacío',
-            ], 422);
-        }
-
-        $pedido = DB::transaction(function () use ($request): Pedido {
-            $carrito = $this->obtenerCarrito($request)->load('items.producto');
+            if ($carrito->items->isEmpty()) {
+                return null;
+            }
 
             foreach ($carrito->items as $item) {
                 $producto = Producto::lockForUpdate()->findOrFail($item->producto_id);
@@ -179,6 +179,12 @@ class CarritoController extends Controller
 
             return $pedido->load('items');
         });
+
+        if ($pedido === null) {
+            return response()->json([
+                'mensaje' => 'No se puede confirmar un carrito vacío',
+            ], 422);
+        }
 
         return response()->json([
             'mensaje' => 'Compra confirmada correctamente',
