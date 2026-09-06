@@ -18,14 +18,15 @@ class CartSummaryData
     public static function fromCart(Carrito $carrito): self
     {
         $items = $carrito->items->map(function ($item): array {
-            $subtotal = round((float) $item->precio_unitario * $item->cantidad, 2);
+            $precio = (float) $item->producto->precio;
+            $subtotal = round($precio * $item->cantidad, 2);
 
             return [
                 'producto_id' => $item->producto_id,
                 'nombre' => $item->producto->nombre,
                 'color' => $item->producto->color,
                 'cantidad' => $item->cantidad,
-                'precio_unitario' => (float) $item->precio_unitario,
+                'precio_unitario' => $precio,
                 'subtotal' => $subtotal,
             ];
         })->values()->all();

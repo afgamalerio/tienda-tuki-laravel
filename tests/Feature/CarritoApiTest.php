@@ -182,6 +182,33 @@ class CarritoApiTest extends TestCase
             ->assertJsonPath('mensaje', 'No se puede confirmar un carrito vacío');
     }
 
+    public function test_summary_and_checkout_use_the_current_product_price(): void
+    {
+        $producto = $this->createProduct(price: 100, stock: 5);
+        $headers = $this->encabezadosAutenticados();
+
+        $this->postJson('/api/v1/carrito/items', [
+            'producto_id' => $producto->id,
+            'cantidad' => 2,
+        ], $headers)->assertCreated();
+
+        $producto->update(['precio' => 150]);
+
+        $this->getJson('/api/v1/carrito/resumen', $headers)
+            ->assertJsonPath('resumen.items.0.precio_unitario', 150)
+            ->assertJsonPath('resumen.subtotal', 300);
+
+        $this->postJson('/api/v1/checkout/confirmar', [
+            'nombre_destinatario' => 'Ana Pérez',
+            'direccion' => 'Calle 123',
+            'ciudad' => 'Buenos Aires',
+            'metodo_pago' => 'tarjeta',
+        ], $headers)
+            ->assertCreated()
+            ->assertJsonPath('pedido.subtotal', '300.00')
+            ->assertJsonPath('pedido.items.0.precio_unitario', '150.00');
+    }
+
     private function createProduct(float $price = 8500, int $stock = 10): Producto
     {
         $categoria = Categoria::create(['nombre' => uniqid('categoria_')]);

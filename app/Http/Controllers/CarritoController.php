@@ -164,14 +164,15 @@ class CarritoController extends Controller
 
             foreach ($carrito->items as $item) {
                 $producto = Producto::lockForUpdate()->findOrFail($item->producto_id);
+                $precio = (float) $producto->precio;
                 $producto->decrement('stock', $item->cantidad);
                 $pedido->items()->create([
                     'producto_id' => $producto->id,
                     'nombre' => $producto->nombre,
                     'color' => $producto->color,
                     'cantidad' => $item->cantidad,
-                    'precio_unitario' => $item->precio_unitario,
-                    'subtotal' => round((float) $item->precio_unitario * $item->cantidad, 2),
+                    'precio_unitario' => $precio,
+                    'subtotal' => round($precio * $item->cantidad, 2),
                 ]);
             }
 
