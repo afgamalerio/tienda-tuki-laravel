@@ -73,6 +73,11 @@ y utilizan códigos HTTP según el resultado de cada operación.
 - Renovación e invalidación de tokens.
 - Carritos y checkout protegidos por usuario.
 
+Los usuarios registrados desde la API reciben el rol `cliente`. Las operaciones
+de creación, modificación y eliminación de productos y categorías requieren un
+JWT válido y el rol `admin`. El usuario creado por el seeder de desarrollo
+(`test@example.com`) tiene ese rol para poder probar dichas operaciones.
+
 ### Flujo principal
 
 1. Registrar un usuario en `/api/v1/auth/register` o iniciar sesión en
@@ -635,6 +640,9 @@ y se vacía el carrito dentro de una transacción.
 
 ## Categorías
 
+Las operaciones `POST`, `PUT` y `DELETE` requieren autenticación JWT con rol
+`admin`. Las consultas `GET` son públicas.
+
 ### Listar categorías
 
 ```http
@@ -684,6 +692,9 @@ DELETE /api/v1/categorias/{id}
 ---
 
 ## Productos
+
+Las operaciones `POST`, `PUT` y `DELETE` requieren autenticación JWT con rol
+`admin`. Las consultas `GET` son públicas.
 
 ### Listar productos
 

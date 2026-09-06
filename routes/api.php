@@ -21,18 +21,22 @@ Route::prefix('v1')->group(function () {
 
     //Rutas de la API para productos
     Route::get('/productos', [ProductoController::class, 'index']);
-    Route::post('/productos', [ProductoController::class, 'store']);
     Route::get('/productos/{id}', [ProductoController::class, 'show']);
-    Route::put('/productos/{id}', [ProductoController::class, 'update']);
-    Route::delete('/productos/{id}', [ProductoController::class, 'destroy']);
+    Route::middleware(['jwt.auth', 'admin'])->group(function () {
+        Route::post('/productos', [ProductoController::class, 'store']);
+        Route::put('/productos/{id}', [ProductoController::class, 'update']);
+        Route::delete('/productos/{id}', [ProductoController::class, 'destroy']);
+    });
 
 
     //Rutas de la API para categorías
     Route::get('/categorias', [CategoriaController::class, 'index']);
-    Route::post('/categorias', [CategoriaController::class, 'store']);
     Route::get('/categorias/{id}', [CategoriaController::class, 'show']);
-    Route::put('/categorias/{id}', [CategoriaController::class, 'update']);
-    Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
+    Route::middleware(['jwt.auth', 'admin'])->group(function () {
+        Route::post('/categorias', [CategoriaController::class, 'store']);
+        Route::put('/categorias/{id}', [CategoriaController::class, 'update']);
+        Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
+    });
 
     //Rutas de la API para usuarios
     Route::get('/usuarios', [UsuarioController::class, 'index'])

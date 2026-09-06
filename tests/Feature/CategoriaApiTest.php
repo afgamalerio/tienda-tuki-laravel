@@ -13,7 +13,7 @@ class CategoriaApiTest extends TestCase
     {
         $response = $this->postJson('/api/v1/categorias', [
             'nombre' => 'Soportes',
-        ]);
+        ], $this->encabezadosAdmin());
 
         $response
             ->assertCreated()
@@ -27,7 +27,7 @@ class CategoriaApiTest extends TestCase
 
     public function test_cannot_create_a_category_without_a_name(): void
     {
-        $response = $this->postJson('/api/v1/categorias', []);
+        $response = $this->postJson('/api/v1/categorias', [], $this->encabezadosAdmin());
 
         $response
             ->assertStatus(422)
@@ -36,9 +36,9 @@ class CategoriaApiTest extends TestCase
 
     public function test_cannot_create_a_category_with_a_duplicate_name(): void
     {
-        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes']);
+        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes'], $this->encabezadosAdmin());
 
-        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes'])
+        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes'], $this->encabezadosAdmin())
             ->assertStatus(422)
             ->assertJsonPath('errores.nombre.0', 'Ya existe una categoría con ese nombre.');
     }
@@ -54,11 +54,11 @@ class CategoriaApiTest extends TestCase
     {
         $categoria = $this->postJson('/api/v1/categorias', [
             'nombre' => 'Soportes',
-        ])->json('categoria');
+        ], $this->encabezadosAdmin())->json('categoria');
 
         $this->putJson('/api/v1/categorias/'.$categoria['id'], [
             'nombre' => 'Accesorios',
-        ])
+        ], $this->encabezadosAdmin())
             ->assertOk()
             ->assertJsonPath('mensaje', 'Categoría actualizada correctamente')
             ->assertJsonPath('categoria.nombre', 'Accesorios');
@@ -71,14 +71,14 @@ class CategoriaApiTest extends TestCase
 
     public function test_cannot_update_a_category_with_a_duplicate_name(): void
     {
-        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes']);
+        $this->postJson('/api/v1/categorias', ['nombre' => 'Soportes'], $this->encabezadosAdmin());
         $categoria = $this->postJson('/api/v1/categorias', [
             'nombre' => 'Accesorios',
-        ])->json('categoria');
+        ], $this->encabezadosAdmin())->json('categoria');
 
         $this->putJson('/api/v1/categorias/'.$categoria['id'], [
             'nombre' => 'Soportes',
-        ])
+        ], $this->encabezadosAdmin())
             ->assertStatus(422)
             ->assertJsonPath('errores.nombre.0', 'Ya existe una categoría con ese nombre.');
     }
@@ -87,9 +87,9 @@ class CategoriaApiTest extends TestCase
     {
         $categoria = $this->postJson('/api/v1/categorias', [
             'nombre' => 'Soportes',
-        ])->json('categoria');
+        ], $this->encabezadosAdmin())->json('categoria');
 
-        $this->deleteJson('/api/v1/categorias/'.$categoria['id'])
+        $this->deleteJson('/api/v1/categorias/'.$categoria['id'], [], $this->encabezadosAdmin())
             ->assertOk()
             ->assertJsonPath('mensaje', 'Categoría eliminada correctamente');
 
@@ -102,15 +102,30 @@ class CategoriaApiTest extends TestCase
     {
         $this->putJson('/api/v1/categorias/999', [
             'nombre' => 'Accesorios',
-        ])
+        ], $this->encabezadosAdmin())
             ->assertNotFound()
             ->assertJsonPath('mensaje', 'Categoría no encontrada');
     }
 
     public function test_returns_not_found_when_deleting_a_missing_category(): void
     {
-        $this->deleteJson('/api/v1/categorias/999')
+        $this->deleteJson('/api/v1/categorias/999', [], $this->encabezadosAdmin())
             ->assertNotFound()
             ->assertJsonPath('mensaje', 'Categoría no encontrada');
+    }
+
+    public function test_category_writes_require_an_admin(): void
+    {
+        $datos = ['nombre' => 'Soportes'];
+
+        $this->postJson('/api/v1/categorias', $datos)
+            ->assertUnauthorized();
+
+        $this->postJson('/api/v1/categorias', $datos, $this->encabezadosAutenticados())
+            ->assertForbidden()
+            ->assertJsonPath('mensaje', 'No tienes permisos para realizar esta operación.');
+
+        $this->postJson('/api/v1/categorias', $datos, $this->encabezadosAdmin())
+            ->assertCreated();
     }
 }

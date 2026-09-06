@@ -18,4 +18,11 @@ abstract class TestCase extends BaseTestCase
             'Authorization' => 'Bearer '.$guard->login($usuario),
         ];
     }
+
+    protected function encabezadosAdmin(): array
+    {
+        return $this->encabezadosAutenticados(
+            User::factory()->create(['rol' => 'admin'])
+        );
+    }
 }
