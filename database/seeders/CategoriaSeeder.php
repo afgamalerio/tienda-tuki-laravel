@@ -12,20 +12,8 @@ class CategoriaSeeder extends Seeder
      */
     public function run(): void
     {
-        Categoria::create([
-            'nombre' => 'Soportes',
-        ]);
-
-        Categoria::create([
-            'nombre' => 'Cerámica',
-        ]);
-
-        Categoria::create([
-            'nombre' => 'Llaveros',
-        ]);
-
-        Categoria::create([
-            'nombre' => 'Decoración',
-        ]);
+        foreach (['Soportes', 'Cerámica', 'Llaveros', 'Decoración'] as $nombre) {
+            Categoria::firstOrCreate(['nombre' => $nombre]);
+        }
     }
 }
