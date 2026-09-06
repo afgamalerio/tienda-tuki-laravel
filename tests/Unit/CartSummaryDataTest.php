@@ -23,7 +23,7 @@ class CartSummaryDataTest extends TestCase
             'cantidad' => 2,
         ]);
         $item->setRelation('producto', $producto);
-        $carrito = new Carrito();
+        $carrito = new Carrito;
         $carrito->setRelation('items', new Collection([$item]));
 
         $resumen = CartSummaryData::fromCart($carrito);
@@ -36,8 +36,8 @@ class CartSummaryDataTest extends TestCase
 
     public function test_applies_free_shipping_for_empty_or_high_value_carts(): void
     {
-        $carritoVacio = new Carrito();
-        $carritoVacio->setRelation('items', new Collection());
+        $carritoVacio = new Carrito;
+        $carritoVacio->setRelation('items', new Collection);
 
         self::assertSame(0.0, CartSummaryData::fromCart($carritoVacio)->envio);
 
@@ -48,7 +48,7 @@ class CartSummaryDataTest extends TestCase
         ]);
         $item = new CarritoItem(['cantidad' => 1]);
         $item->setRelation('producto', $producto);
-        $carrito = new Carrito();
+        $carrito = new Carrito;
         $carrito->setRelation('items', new Collection([$item]));
 
         self::assertSame(0.0, CartSummaryData::fromCart($carrito)->envio);

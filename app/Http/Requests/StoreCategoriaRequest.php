@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreCategoriaRequest extends FormRequest
@@ -29,12 +29,12 @@ class StoreCategoriaRequest extends FormRequest
         ];
     }
 
-    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    protected function failedValidation(Validator $validator)
     {
-        throw new \Illuminate\Http\Exceptions\HttpResponseException(
+        throw new HttpResponseException(
             response()->json([
                 'mensaje' => 'Error de validación',
-                'errores' => $validator->errors()
+                'errores' => $validator->errors(),
             ], 422)
         );
     }

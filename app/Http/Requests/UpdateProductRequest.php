@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Rules\UniqueProductVariant;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -51,7 +51,7 @@ class UpdateProductRequest extends FormRequest
         throw new HttpResponseException(
             response()->json([
                 'mensaje' => 'Error de validación',
-                'errores' => $validator->errors()
+                'errores' => $validator->errors(),
             ], 422)
         );
     }

@@ -13,7 +13,7 @@ class ProductoController extends Controller
     {
         return response()->json([
             'mensaje' => 'Listado de productos',
-            'productos' => Producto::all()
+            'productos' => Producto::all(),
         ]);
     }
 
@@ -23,7 +23,7 @@ class ProductoController extends Controller
 
         return response()->json([
             'mensaje' => 'Producto creado correctamente',
-            'producto' => $producto
+            'producto' => $producto,
         ], 201);
     }
 
@@ -31,15 +31,15 @@ class ProductoController extends Controller
     {
         $producto = Producto::find($id);
 
-        if (!$producto) {
+        if (! $producto) {
             return response()->json([
-                'mensaje' => 'Producto no encontrado'
+                'mensaje' => 'Producto no encontrado',
             ], 404);
         }
 
         return response()->json([
             'mensaje' => 'Producto encontrado',
-            'producto' => $producto
+            'producto' => $producto,
         ]);
     }
 
@@ -47,9 +47,9 @@ class ProductoController extends Controller
     {
         $producto = Producto::find($id);
 
-        if (!$producto) {
+        if (! $producto) {
             return response()->json([
-                'mensaje' => 'Producto no encontrado'
+                'mensaje' => 'Producto no encontrado',
             ], 404);
         }
 
@@ -57,7 +57,7 @@ class ProductoController extends Controller
 
         return response()->json([
             'mensaje' => 'Producto actualizado correctamente',
-            'producto' => $producto
+            'producto' => $producto,
         ]);
     }
 
@@ -65,9 +65,9 @@ class ProductoController extends Controller
     {
         $producto = Producto::find($id);
 
-        if (!$producto) {
+        if (! $producto) {
             return response()->json([
-                'mensaje' => 'Producto no encontrado'
+                'mensaje' => 'Producto no encontrado',
             ], 404);
         }
 
@@ -80,7 +80,7 @@ class ProductoController extends Controller
         $producto->delete();
 
         return response()->json([
-            'mensaje' => 'Producto eliminado correctamente'
+            'mensaje' => 'Producto eliminado correctamente',
         ]);
     }
 }

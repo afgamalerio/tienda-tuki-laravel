@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\ProcesadorPago;
 use App\Data\CartSummaryData;
 use App\Data\CheckoutData;
-use App\Contracts\ProcesadorPago;
 use App\Exceptions\StockInsuficienteException;
 use App\Http\Requests\AddCartItemRequest;
 use App\Http\Requests\CheckoutRequest;
@@ -17,9 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class CarritoController extends Controller
 {
-    public function __construct(private readonly ProcesadorPago $procesadorPago)
-    {
-    }
+    public function __construct(private readonly ProcesadorPago $procesadorPago) {}
 
     public function index(Request $request)
     {
@@ -66,7 +64,7 @@ class CarritoController extends Controller
         $carrito = $this->obtenerCarrito($request);
         $producto = Producto::find($productoId);
 
-        if (!$producto) {
+        if (! $producto) {
             return response()->json([
                 'mensaje' => 'Producto no encontrado',
             ], 404);
@@ -74,7 +72,7 @@ class CarritoController extends Controller
 
         $item = $carrito->items->firstWhere('producto_id', $productoId);
 
-        if (!$item) {
+        if (! $item) {
             return response()->json([
                 'mensaje' => 'El producto no está en el carrito',
             ], 404);
@@ -94,7 +92,7 @@ class CarritoController extends Controller
         $carrito = $this->obtenerCarrito($request);
         $item = $carrito->items()->where('producto_id', $productoId)->first();
 
-        if (!$item) {
+        if (! $item) {
             return response()->json([
                 'mensaje' => 'El producto no está en el carrito',
             ], 404);

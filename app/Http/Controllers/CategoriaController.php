@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Categoria;
 use App\Http\Requests\StoreCategoriaRequest;
 use App\Http\Requests\UpdateCategoriaRequest;
+use App\Models\Categoria;
 
 class CategoriaController extends Controller
 {
@@ -14,7 +14,7 @@ class CategoriaController extends Controller
 
         return response()->json([
             'mensaje' => 'Listado de categorías',
-            'categorias' => $categorias
+            'categorias' => $categorias,
         ]);
     }
 
@@ -22,9 +22,9 @@ class CategoriaController extends Controller
     {
         $categoria = Categoria::find($id);
 
-        if (!$categoria) {
+        if (! $categoria) {
             return response()->json([
-                'mensaje' => 'Categoría no encontrada'
+                'mensaje' => 'Categoría no encontrada',
             ], 404);
         }
 
@@ -48,7 +48,7 @@ class CategoriaController extends Controller
     {
         $categoria = Categoria::find($id);
 
-        if (!$categoria) {
+        if (! $categoria) {
             return response()->json(['mensaje' => 'Categoría no encontrada'], 404);
         }
 
@@ -64,7 +64,7 @@ class CategoriaController extends Controller
     {
         $categoria = Categoria::find($id);
 
-        if (!$categoria) {
+        if (! $categoria) {
             return response()->json(['mensaje' => 'Categoría no encontrada'], 404);
         }
 

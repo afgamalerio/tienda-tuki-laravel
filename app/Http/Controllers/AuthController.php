@@ -43,7 +43,7 @@ class AuthController extends Controller
         $credenciales = $request->validated();
         $token = JWTAuth::attempt($credenciales);
 
-        if (!$token) {
+        if (! $token) {
             return response()->json([
                 'mensaje' => 'Las credenciales son incorrectas',
             ], 401);

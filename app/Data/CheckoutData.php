@@ -9,8 +9,7 @@ class CheckoutData
         public readonly string $direccion,
         public readonly string $ciudad,
         public readonly string $metodoPago,
-    ) {
-    }
+    ) {}
 
     public static function fromArray(array $datos): self
     {

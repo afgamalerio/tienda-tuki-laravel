@@ -12,8 +12,7 @@ class CartSummaryData
         public readonly float $impuestos,
         public readonly float $envio,
         public readonly float $total,
-    ) {
-    }
+    ) {}
 
     public static function fromCart(Carrito $carrito): self
     {
