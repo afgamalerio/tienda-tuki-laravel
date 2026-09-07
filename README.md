@@ -783,6 +783,10 @@ mock para verificar la operación sin llamadas a servicios reales. Al incorporar
 un proveedor externo, debe conservarse esta abstracción y sustituir la
 implementación simulada mediante el contenedor de Laravel.
 
+La confirmación requiere la cabecera `Idempotency-Key`. Si el cliente reintenta
+la misma compra con la misma clave, la API devuelve el pedido ya creado y no
+vuelve a descontar stock.
+
 ### 1. Iniciar Laravel
 
 Ejecutar:

@@ -155,7 +155,7 @@ class CarritoApiTest extends TestCase
             'direccion' => 'Calle 123',
             'ciudad' => 'Buenos Aires',
             'metodo_pago' => 'tarjeta',
-        ], $headers);
+        ], [...$headers, 'Idempotency-Key' => 'checkout-stock']);
 
         $response
             ->assertCreated()
@@ -177,7 +177,7 @@ class CarritoApiTest extends TestCase
             'direccion' => 'Calle 123',
             'ciudad' => 'Buenos Aires',
             'metodo_pago' => 'tarjeta',
-        ], $this->encabezadosAutenticados())
+        ], [...$this->encabezadosAutenticados(), 'Idempotency-Key' => 'checkout-vacio'])
             ->assertUnprocessable()
             ->assertJsonPath('mensaje', 'No se puede confirmar un carrito vacío');
     }
@@ -203,7 +203,7 @@ class CarritoApiTest extends TestCase
             'direccion' => 'Calle 123',
             'ciudad' => 'Buenos Aires',
             'metodo_pago' => 'tarjeta',
-        ], $headers)
+        ], [...$headers, 'Idempotency-Key' => 'checkout-precio'])
             ->assertCreated()
             ->assertJsonPath('pedido.subtotal', '300.00')
             ->assertJsonPath('pedido.items.0.precio_unitario', '150.00');
@@ -219,6 +219,33 @@ class CarritoApiTest extends TestCase
         ], $this->encabezadosAutenticados())
             ->assertUnprocessable()
             ->assertJsonStructure(['errores' => ['cantidad']]);
+    }
+
+    public function test_checkout_is_idempotent_for_the_same_key(): void
+    {
+        $producto = $this->createProduct(price: 100, stock: 5);
+        $headers = $this->encabezadosAutenticados();
+        $this->postJson('/api/v1/carrito/items', [
+            'producto_id' => $producto->id,
+            'cantidad' => 1,
+        ], $headers)->assertCreated();
+
+        $datos = [
+            'nombre_destinatario' => 'Ana Pérez',
+            'direccion' => 'Calle 123',
+            'ciudad' => 'Buenos Aires',
+            'metodo_pago' => 'tarjeta',
+        ];
+        $headers['Idempotency-Key'] = 'checkout-repetido';
+
+        $this->postJson('/api/v1/checkout/confirmar', $datos, $headers)
+            ->assertCreated();
+        $this->postJson('/api/v1/checkout/confirmar', $datos, $headers)
+            ->assertOk();
+
+        $this->assertDatabaseCount('pedidos', 1);
+        $this->assertDatabaseCount('pedido_items', 1);
+        $this->assertDatabaseHas('productos', ['id' => $producto->id, 'stock' => 4]);
     }
 
     private function createProduct(float $price = 8500, int $stock = 10): Producto

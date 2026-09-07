@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\ProcesadorPago;
 use App\Data\CartSummaryData;
 use App\Data\CheckoutData;
 use App\Exceptions\StockInsuficienteException;
@@ -10,14 +9,15 @@ use App\Http\Requests\AddCartItemRequest;
 use App\Http\Requests\CheckoutRequest;
 use App\Http\Requests\UpdateCartItemRequest;
 use App\Models\Carrito;
-use App\Models\Pedido;
 use App\Models\Producto;
+use App\Models\User;
+use App\Services\ConfirmarCompra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CarritoController extends Controller
 {
-    public function __construct(private readonly ProcesadorPago $procesadorPago) {}
+    public function __construct(private readonly ConfirmarCompra $confirmarCompra) {}
 
     public function index(Request $request)
     {
@@ -139,54 +139,14 @@ class CarritoController extends Controller
 
     public function confirm(CheckoutRequest $request)
     {
-        $pedido = DB::transaction(function () use ($request): ?Pedido {
-            $carrito = $this->obtenerCarrito($request);
-            $carrito = Carrito::whereKey($carrito->id)
-                ->lockForUpdate()
-                ->with('items.producto')
-                ->firstOrFail();
-
-            if ($carrito->items->isEmpty()) {
-                return null;
-            }
-
-            foreach ($carrito->items as $item) {
-                $producto = Producto::lockForUpdate()->findOrFail($item->producto_id);
-                $this->validarStock($producto, $item->cantidad);
-            }
-
-            $resumen = CartSummaryData::fromCart($carrito);
-            $datos = CheckoutData::fromArray($request->validated());
-            $pedido = Pedido::create([
-                'user_id' => $carrito->user_id,
-                'session_id' => $carrito->session_id,
-                'subtotal' => $resumen->subtotal,
-                'impuestos' => $resumen->impuestos,
-                'envio' => $resumen->envio,
-                'total' => $resumen->total,
-                ...$datos->toArray(),
-            ]);
-
-            $this->procesadorPago->cobrar($pedido);
-
-            foreach ($carrito->items as $item) {
-                $producto = Producto::lockForUpdate()->findOrFail($item->producto_id);
-                $precio = (float) $producto->precio;
-                $producto->decrement('stock', $item->cantidad);
-                $pedido->items()->create([
-                    'producto_id' => $producto->id,
-                    'nombre' => $producto->nombre,
-                    'color' => $producto->color,
-                    'cantidad' => $item->cantidad,
-                    'precio_unitario' => $precio,
-                    'subtotal' => round($precio * $item->cantidad, 2),
-                ]);
-            }
-
-            $carrito->items()->delete();
-
-            return $pedido->load('items');
-        });
+        /** @var User $usuario */
+        $usuario = $request->user('api');
+        $datos = CheckoutData::fromArray($request->validated());
+        $pedido = $this->confirmarCompra->ejecutar(
+            $usuario,
+            $datos,
+            $request->validated()['idempotency_key'],
+        );
 
         if ($pedido === null) {
             return response()->json([
@@ -197,7 +157,7 @@ class CarritoController extends Controller
         return response()->json([
             'mensaje' => 'Compra confirmada correctamente',
             'pedido' => $pedido,
-        ], 201);
+        ], $pedido->wasRecentlyCreated ? 201 : 200);
     }
 
     private function obtenerCarrito(Request $request): Carrito
