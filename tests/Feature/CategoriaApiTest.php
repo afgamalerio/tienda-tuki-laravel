@@ -27,6 +27,16 @@ class CategoriaApiTest extends TestCase
         ]);
     }
 
+    public function test_can_paginate_categories(): void
+    {
+        Categoria::factory()->count(2)->create();
+
+        $this->getJson('/api/v1/categorias?per_page=1')
+            ->assertOk()
+            ->assertJsonCount(1, 'categorias.data')
+            ->assertJsonStructure(['categorias' => ['data', 'links', 'meta']]);
+    }
+
     public function test_cannot_create_a_category_without_a_name(): void
     {
         $response = $this->postJson('/api/v1/categorias', [], $this->encabezadosAdmin());

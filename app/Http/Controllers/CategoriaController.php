@@ -4,17 +4,36 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCategoriaRequest;
 use App\Http\Requests\UpdateCategoriaRequest;
+use App\Http\Resources\CategoriaResource;
 use App\Models\Categoria;
+use Illuminate\Http\Request;
 
 class CategoriaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categorias = Categoria::all();
+        $porPagina = min(max($request->integer('per_page', 15), 1), 100);
+        $categorias = Categoria::paginate($porPagina);
 
         return response()->json([
             'mensaje' => 'Listado de categorías',
-            'categorias' => $categorias,
+            'categorias' => [
+                'data' => CategoriaResource::collection($categorias->getCollection())->resolve(),
+                'links' => [
+                    'first' => $categorias->url(1),
+                    'last' => $categorias->url($categorias->lastPage()),
+                    'prev' => $categorias->previousPageUrl(),
+                    'next' => $categorias->nextPageUrl(),
+                ],
+                'meta' => [
+                    'current_page' => $categorias->currentPage(),
+                    'from' => $categorias->firstItem(),
+                    'last_page' => $categorias->lastPage(),
+                    'per_page' => $categorias->perPage(),
+                    'to' => $categorias->lastItem(),
+                    'total' => $categorias->total(),
+                ],
+            ],
         ]);
     }
 
@@ -30,7 +49,7 @@ class CategoriaController extends Controller
 
         return response()->json([
             'mensaje' => 'Categoría encontrada',
-            'categoria' => $categoria,
+            'categoria' => new CategoriaResource($categoria),
         ]);
     }
 
@@ -40,7 +59,7 @@ class CategoriaController extends Controller
 
         return response()->json([
             'mensaje' => 'Categoría creada correctamente',
-            'categoria' => $categoria,
+            'categoria' => new CategoriaResource($categoria),
         ], 201);
     }
 
@@ -56,7 +75,7 @@ class CategoriaController extends Controller
 
         return response()->json([
             'mensaje' => 'Categoría actualizada correctamente',
-            'categoria' => $categoria,
+            'categoria' => new CategoriaResource($categoria),
         ]);
     }
 

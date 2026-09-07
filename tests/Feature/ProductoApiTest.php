@@ -44,7 +44,8 @@ class ProductoApiTest extends TestCase
         $this->getJson('/api/v1/productos')
             ->assertOk()
             ->assertJsonPath('mensaje', 'Listado de productos')
-            ->assertJsonCount(1, 'productos');
+            ->assertJsonCount(1, 'productos.data')
+            ->assertJsonStructure(['productos' => ['data', 'links', 'meta']]);
     }
 
     public function test_can_update_a_product(): void

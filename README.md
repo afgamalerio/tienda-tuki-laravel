@@ -697,6 +697,10 @@ DELETE /api/v1/categorias/{id}
 Las operaciones `POST`, `PUT` y `DELETE` requieren autenticación JWT con rol
 `admin`. Las consultas `GET` son públicas.
 
+Los listados de productos y categorías están paginados. Se puede indicar el
+tamaño de página mediante `?per_page=15`; la API acepta valores entre 1 y 100 y
+devuelve los elementos en `data`, junto con `links` y `meta`.
+
 ### Listar productos
 
 ```http
