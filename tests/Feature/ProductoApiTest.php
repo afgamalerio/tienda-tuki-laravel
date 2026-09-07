@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Carrito;
 use App\Models\Categoria;
 use App\Models\Producto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +19,7 @@ class ProductoApiTest extends TestCase
         $response = $this->postJson('/api/v1/productos', [
             ...$this->productData(),
             'categoria_id' => $categoria->id,
-        ]);
+        ], $this->encabezadosAdmin());
 
         $response
             ->assertCreated()
@@ -43,7 +44,8 @@ class ProductoApiTest extends TestCase
         $this->getJson('/api/v1/productos')
             ->assertOk()
             ->assertJsonPath('mensaje', 'Listado de productos')
-            ->assertJsonCount(1, 'productos');
+            ->assertJsonCount(1, 'productos.data')
+            ->assertJsonStructure(['productos' => ['data', 'links', 'meta']]);
     }
 
     public function test_can_update_a_product(): void
@@ -58,7 +60,7 @@ class ProductoApiTest extends TestCase
             ...$this->productData(),
             'nombre' => 'Soporte actualizado',
             'categoria_id' => $categoria->id,
-        ])
+        ], $this->encabezadosAdmin())
             ->assertOk()
             ->assertJsonPath('mensaje', 'Producto actualizado correctamente')
             ->assertJsonPath('producto.nombre', 'Soporte actualizado');
@@ -77,7 +79,7 @@ class ProductoApiTest extends TestCase
             'categoria_id' => $categoria->id,
         ]);
 
-        $this->deleteJson('/api/v1/productos/'.$producto->id)
+        $this->deleteJson('/api/v1/productos/'.$producto->id, [], $this->encabezadosAdmin())
             ->assertOk()
             ->assertJsonPath('mensaje', 'Producto eliminado correctamente');
 
@@ -97,7 +99,7 @@ class ProductoApiTest extends TestCase
         $response = $this->postJson('/api/v1/productos', [
             ...$this->productData(),
             'categoria_id' => $categoria->id,
-        ]);
+        ], $this->encabezadosAdmin());
 
         $response
             ->assertStatus(422)
@@ -109,14 +111,14 @@ class ProductoApiTest extends TestCase
         $this->postJson('/api/v1/productos', [
             ...$this->productData(),
             'categoria_id' => 999,
-        ])
+        ], $this->encabezadosAdmin())
             ->assertStatus(422)
             ->assertJsonPath('errores.categoria_id.0', 'La categoría seleccionada no existe.');
     }
 
     public function test_cannot_create_a_product_without_required_data(): void
     {
-        $this->postJson('/api/v1/productos', [])
+        $this->postJson('/api/v1/productos', [], $this->encabezadosAdmin())
             ->assertStatus(422)
             ->assertJsonStructure([
                 'mensaje',
@@ -148,7 +150,7 @@ class ProductoApiTest extends TestCase
         $this->putJson('/api/v1/productos/'.$productoAActualizar->id, [
             ...$this->productData(),
             'categoria_id' => $categoria->id,
-        ])
+        ], $this->encabezadosAdmin())
             ->assertStatus(422)
             ->assertJsonPath('errores.color.0', 'Ya existe otro producto con ese nombre y color.');
 
@@ -157,6 +159,56 @@ class ProductoApiTest extends TestCase
             'nombre' => 'Soporte para celular',
             'color' => 'Negro',
         ]);
+    }
+
+    public function test_product_writes_require_an_admin(): void
+    {
+        $datos = [
+            ...$this->productData(),
+            'categoria_id' => Categoria::create(['nombre' => 'Soportes'])->id,
+        ];
+
+        $this->postJson('/api/v1/productos', $datos)
+            ->assertUnauthorized();
+
+        $this->postJson('/api/v1/productos', $datos, $this->encabezadosAutenticados())
+            ->assertForbidden()
+            ->assertJsonPath('mensaje', 'No tienes permisos para realizar esta operación.');
+
+        $this->postJson('/api/v1/productos', $datos, $this->encabezadosAdmin())
+            ->assertCreated();
+    }
+
+    public function test_product_validation_rejects_oversized_fields(): void
+    {
+        $datos = [
+            ...$this->productData(),
+            'nombre' => str_repeat('a', 256),
+            'categoria_id' => Categoria::factory()->create()->id,
+        ];
+
+        $this->postJson('/api/v1/productos', $datos, $this->encabezadosAdmin())
+            ->assertUnprocessable()
+            ->assertJsonStructure(['errores' => ['nombre']]);
+    }
+
+    public function test_cannot_delete_a_product_present_in_a_cart(): void
+    {
+        $producto = Producto::factory()->create();
+        $carrito = Carrito::create([
+            'session_id' => 'carrito-prueba',
+        ]);
+        $carrito->items()->create([
+            'producto_id' => $producto->id,
+            'cantidad' => 1,
+            'precio_unitario' => $producto->precio,
+        ]);
+
+        $this->deleteJson('/api/v1/productos/'.$producto->id, [], $this->encabezadosAdmin())
+            ->assertStatus(409)
+            ->assertJsonPath('mensaje', 'No se puede eliminar un producto presente en un carrito.');
+
+        $this->assertDatabaseHas('productos', ['id' => $producto->id]);
     }
 
     private function productData(): array

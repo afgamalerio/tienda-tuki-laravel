@@ -1,12 +1,12 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CarritoController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\CarritoController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UsuarioController;
 
 Route::get('/user', function (Request $request) {
     return response()->json([
@@ -16,25 +16,30 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
 
-    Route::post('/auth/register', [AuthController::class, 'register']);
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/register', [AuthController::class, 'register'])
+        ->middleware('throttle:autenticacion');
+    Route::post('/auth/login', [AuthController::class, 'login'])
+        ->middleware('throttle:autenticacion');
 
-    //Rutas de la API para productos
+    // Rutas de la API para productos
     Route::get('/productos', [ProductoController::class, 'index']);
-    Route::post('/productos', [ProductoController::class, 'store']);
     Route::get('/productos/{id}', [ProductoController::class, 'show']);
-    Route::put('/productos/{id}', [ProductoController::class, 'update']);
-    Route::delete('/productos/{id}', [ProductoController::class, 'destroy']);
+    Route::middleware(['jwt.auth', 'admin'])->group(function () {
+        Route::post('/productos', [ProductoController::class, 'store']);
+        Route::put('/productos/{id}', [ProductoController::class, 'update']);
+        Route::delete('/productos/{id}', [ProductoController::class, 'destroy']);
+    });
 
-
-    //Rutas de la API para categorías
+    // Rutas de la API para categorías
     Route::get('/categorias', [CategoriaController::class, 'index']);
-    Route::post('/categorias', [CategoriaController::class, 'store']);
     Route::get('/categorias/{id}', [CategoriaController::class, 'show']);
-    Route::put('/categorias/{id}', [CategoriaController::class, 'update']);
-    Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
+    Route::middleware(['jwt.auth', 'admin'])->group(function () {
+        Route::post('/categorias', [CategoriaController::class, 'store']);
+        Route::put('/categorias/{id}', [CategoriaController::class, 'update']);
+        Route::delete('/categorias/{id}', [CategoriaController::class, 'destroy']);
+    });
 
-    //Rutas de la API para usuarios
+    // Rutas de la API para usuarios
     Route::get('/usuarios', [UsuarioController::class, 'index'])
         ->name('api.usuarios');
 

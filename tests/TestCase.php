@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use PHPOpenSourceSaver\JWTAuth\JWTGuard;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -11,11 +12,18 @@ abstract class TestCase extends BaseTestCase
     {
         $usuario ??= User::factory()->create();
 
-        /** @var \PHPOpenSourceSaver\JWTAuth\JWTGuard $guard */
+        /** @var JWTGuard $guard */
         $guard = auth('api');
 
         return [
             'Authorization' => 'Bearer '.$guard->login($usuario),
         ];
+    }
+
+    protected function encabezadosAdmin(): array
+    {
+        return $this->encabezadosAutenticados(
+            User::factory()->create(['rol' => 'admin'])
+        );
     }
 }

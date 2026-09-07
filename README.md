@@ -73,6 +73,12 @@ y utilizan códigos HTTP según el resultado de cada operación.
 - Renovación e invalidación de tokens.
 - Carritos y checkout protegidos por usuario.
 
+Los usuarios registrados desde la API reciben el rol `cliente`. Las operaciones
+de creación, modificación y eliminación de productos y categorías requieren un
+JWT válido y el rol `admin`. El usuario creado por el seeder de desarrollo
+(`test@example.com`, contraseña `password`) tiene ese rol para poder probar
+dichas operaciones.
+
 ### Flujo principal
 
 1. Registrar un usuario en `/api/v1/auth/register` o iniciar sesión en
@@ -635,6 +641,9 @@ y se vacía el carrito dentro de una transacción.
 
 ## Categorías
 
+Las operaciones `POST`, `PUT` y `DELETE` requieren autenticación JWT con rol
+`admin`. Las consultas `GET` son públicas.
+
 ### Listar categorías
 
 ```http
@@ -684,6 +693,13 @@ DELETE /api/v1/categorias/{id}
 ---
 
 ## Productos
+
+Las operaciones `POST`, `PUT` y `DELETE` requieren autenticación JWT con rol
+`admin`. Las consultas `GET` son públicas.
+
+Los listados de productos y categorías están paginados. Se puede indicar el
+tamaño de página mediante `?per_page=15`; la API acepta valores entre 1 y 100 y
+devuelve los elementos en `data`, junto con `links` y `meta`.
 
 ### Listar productos
 
@@ -759,6 +775,22 @@ Las pruebas utilizan SQLite en memoria para mantener los casos aislados. La
 aplicación y las migraciones de desarrollo utilizan MySQL según la configuración
 del archivo `.env`.
 
+La suite incluye pruebas unitarias para el cálculo del carrito y el contexto de
+la excepción de stock, además de Feature Tests para autenticación, permisos,
+catálogo, carrito y checkout. Las factories de usuarios, categorías y productos
+generan datos relacionados y los seeders preparan datos iniciales para el
+entorno de desarrollo.
+
+El checkout utiliza el contrato `ProcesadorPago`, con una implementación local
+simulada por defecto. El test `ProcesadorPagoTest` reemplaza ese contrato por un
+mock para verificar la operación sin llamadas a servicios reales. Al incorporar
+un proveedor externo, debe conservarse esta abstracción y sustituir la
+implementación simulada mediante el contenedor de Laravel.
+
+La confirmación requiere la cabecera `Idempotency-Key`. Si el cliente reintenta
+la misma compra con la misma clave, la API devuelve el pedido ya creado y no
+vuelve a descontar stock.
+
 ### 1. Iniciar Laravel
 
 Ejecutar:
@@ -776,6 +808,11 @@ La colección disponible en
 automática del token, carrito, checkout y ejemplos de respuestas `401`, `404` y
 `422`.
 
+Para probar las operaciones administrativas desde Postman, ejecutar primero
+`Autenticación > Login administrador`. La solicitud guarda el token en
+`admin_token`, que se hereda automáticamente en las carpetas `Categorias` y
+`Productos`.
+
 También se pueden consultar los endpoints `GET` directamente desde el navegador.
 
 Por ejemplo:
@@ -791,6 +828,34 @@ http://127.0.0.1:8000/api/v1/categorias
 ```
 
 Para las operaciones `POST`, `PUT` y `DELETE` se debe utilizar una herramienta que permita enviar solicitudes HTTP.
+
+## Despliegue en producción
+
+El proyecto queda preparado para desplegarse en un servicio compatible con PHP
+8.2, Composer y MySQL. Como mínimo, el entorno de producción debe configurar:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=<clave-generada>
+DB_CONNECTION=mysql
+JWT_SECRET=<secreto-generado>
+```
+
+Después de configurar las variables de entorno, ejecutar:
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+La URL pública queda pendiente de definir porque requiere seleccionar un
+proveedor de hosting y configurar sus credenciales. Una vez desplegada, debe
+documentarse aquí la URL base de la API y verificarse `/up`, el login JWT y un
+flujo completo de carrito y checkout.
 
 ### 3. Probar las validaciones
 

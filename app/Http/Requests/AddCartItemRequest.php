@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class AddCartItemRequest extends FormRequest
@@ -17,7 +17,7 @@ class AddCartItemRequest extends FormRequest
     {
         return [
             'producto_id' => 'required|integer|exists:productos,id',
-            'cantidad' => 'required|integer|min:1',
+            'cantidad' => 'required|integer|min:1|max:1000',
         ];
     }
 

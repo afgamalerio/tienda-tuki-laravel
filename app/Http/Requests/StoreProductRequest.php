@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Rules\UniqueProductVariant;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreProductRequest extends FormRequest
 {
@@ -26,9 +26,9 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required|string',
-            'descripcion' => 'required|string',
-            'imagen' => 'nullable|string',
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'required|string|max:5000',
+            'imagen' => 'nullable|string|max:2048',
             'precio' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
 
@@ -50,7 +50,7 @@ class StoreProductRequest extends FormRequest
         throw new HttpResponseException(
             response()->json([
                 'mensaje' => 'Error de validación',
-                'errores' => $validator->errors()
+                'errores' => $validator->errors(),
             ], 422)
         );
     }

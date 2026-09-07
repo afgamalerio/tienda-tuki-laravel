@@ -11,6 +11,7 @@ class Pedido extends Model
     protected $fillable = [
         'user_id',
         'session_id',
+        'idempotency_key',
         'estado',
         'subtotal',
         'impuestos',

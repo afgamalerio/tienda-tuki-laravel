@@ -155,7 +155,7 @@ class CarritoApiTest extends TestCase
             'direccion' => 'Calle 123',
             'ciudad' => 'Buenos Aires',
             'metodo_pago' => 'tarjeta',
-        ], $headers);
+        ], [...$headers, 'Idempotency-Key' => 'checkout-stock']);
 
         $response
             ->assertCreated()
@@ -168,6 +168,84 @@ class CarritoApiTest extends TestCase
         ]);
         $this->assertDatabaseCount('pedido_items', 1);
         $this->assertDatabaseCount('carrito_items', 0);
+    }
+
+    public function test_cannot_confirm_an_empty_cart(): void
+    {
+        $this->postJson('/api/v1/checkout/confirmar', [
+            'nombre_destinatario' => 'Ana Pérez',
+            'direccion' => 'Calle 123',
+            'ciudad' => 'Buenos Aires',
+            'metodo_pago' => 'tarjeta',
+        ], [...$this->encabezadosAutenticados(), 'Idempotency-Key' => 'checkout-vacio'])
+            ->assertUnprocessable()
+            ->assertJsonPath('mensaje', 'No se puede confirmar un carrito vacío');
+    }
+
+    public function test_summary_and_checkout_use_the_current_product_price(): void
+    {
+        $producto = $this->createProduct(price: 100, stock: 5);
+        $headers = $this->encabezadosAutenticados();
+
+        $this->postJson('/api/v1/carrito/items', [
+            'producto_id' => $producto->id,
+            'cantidad' => 2,
+        ], $headers)->assertCreated();
+
+        $producto->update(['precio' => 150]);
+
+        $this->getJson('/api/v1/carrito/resumen', $headers)
+            ->assertJsonPath('resumen.items.0.precio_unitario', 150)
+            ->assertJsonPath('resumen.subtotal', 300);
+
+        $this->postJson('/api/v1/checkout/confirmar', [
+            'nombre_destinatario' => 'Ana Pérez',
+            'direccion' => 'Calle 123',
+            'ciudad' => 'Buenos Aires',
+            'metodo_pago' => 'tarjeta',
+        ], [...$headers, 'Idempotency-Key' => 'checkout-precio'])
+            ->assertCreated()
+            ->assertJsonPath('pedido.subtotal', '300.00')
+            ->assertJsonPath('pedido.items.0.precio_unitario', '150.00');
+    }
+
+    public function test_cart_rejects_excessive_quantities(): void
+    {
+        $producto = $this->createProduct(stock: 2000);
+
+        $this->postJson('/api/v1/carrito/items', [
+            'producto_id' => $producto->id,
+            'cantidad' => 1001,
+        ], $this->encabezadosAutenticados())
+            ->assertUnprocessable()
+            ->assertJsonStructure(['errores' => ['cantidad']]);
+    }
+
+    public function test_checkout_is_idempotent_for_the_same_key(): void
+    {
+        $producto = $this->createProduct(price: 100, stock: 5);
+        $headers = $this->encabezadosAutenticados();
+        $this->postJson('/api/v1/carrito/items', [
+            'producto_id' => $producto->id,
+            'cantidad' => 1,
+        ], $headers)->assertCreated();
+
+        $datos = [
+            'nombre_destinatario' => 'Ana Pérez',
+            'direccion' => 'Calle 123',
+            'ciudad' => 'Buenos Aires',
+            'metodo_pago' => 'tarjeta',
+        ];
+        $headers['Idempotency-Key'] = 'checkout-repetido';
+
+        $this->postJson('/api/v1/checkout/confirmar', $datos, $headers)
+            ->assertCreated();
+        $this->postJson('/api/v1/checkout/confirmar', $datos, $headers)
+            ->assertOk();
+
+        $this->assertDatabaseCount('pedidos', 1);
+        $this->assertDatabaseCount('pedido_items', 1);
+        $this->assertDatabaseHas('productos', ['id' => $producto->id, 'stock' => 4]);
     }
 
     private function createProduct(float $price = 8500, int $stock = 10): Producto

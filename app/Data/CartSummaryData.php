@@ -12,27 +12,27 @@ class CartSummaryData
         public readonly float $impuestos,
         public readonly float $envio,
         public readonly float $total,
-    ) {
-    }
+    ) {}
 
     public static function fromCart(Carrito $carrito): self
     {
         $items = $carrito->items->map(function ($item): array {
-            $subtotal = round((float) $item->precio_unitario * $item->cantidad, 2);
+            $precio = (float) $item->producto->precio;
+            $subtotal = round($precio * $item->cantidad, 2);
 
             return [
                 'producto_id' => $item->producto_id,
                 'nombre' => $item->producto->nombre,
                 'color' => $item->producto->color,
                 'cantidad' => $item->cantidad,
-                'precio_unitario' => (float) $item->precio_unitario,
+                'precio_unitario' => $precio,
                 'subtotal' => $subtotal,
             ];
         })->values()->all();
 
-        $subtotal = round(array_sum(array_column($items, 'subtotal')), 2);
+        $subtotal = (float) round(array_sum(array_column($items, 'subtotal')), 2);
         $impuestos = round($subtotal * 0.21, 2);
-        $envio = $subtotal >= 50000 || $subtotal === 0 ? 0.0 : 5000.0;
+        $envio = ($subtotal >= 50000 || $subtotal === 0.0) ? 0.0 : 5000.0;
 
         return new self(
             $items,

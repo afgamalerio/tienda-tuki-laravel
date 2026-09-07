@@ -2,15 +2,16 @@
 
 namespace App\Rules;
 
-use Closure;
 use App\Models\Producto;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Translation\PotentiallyTranslatedString;
 
 class UniqueProductVariant implements ValidationRule
 {
     private ?string $nombre;
+
     private ?string $color;
+
     private ?int $productoId;
 
     public function __construct(?string $nombre, ?string $color, ?int $productoId = null)
@@ -19,7 +20,7 @@ class UniqueProductVariant implements ValidationRule
         $this->color = $color;
         $this->productoId = $productoId;
     }
-    
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if ($this->nombre === null || $this->color === null) {

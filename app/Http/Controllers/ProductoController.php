@@ -4,15 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Http\Resources\ProductoResource;
+use App\Models\CarritoItem;
 use App\Models\Producto;
+use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $porPagina = min(max($request->integer('per_page', 15), 1), 100);
+        $productos = Producto::paginate($porPagina);
+
         return response()->json([
             'mensaje' => 'Listado de productos',
-            'productos' => Producto::all()
+            'productos' => [
+                'data' => ProductoResource::collection($productos->getCollection())->resolve(),
+                'links' => [
+                    'first' => $productos->url(1),
+                    'last' => $productos->url($productos->lastPage()),
+                    'prev' => $productos->previousPageUrl(),
+                    'next' => $productos->nextPageUrl(),
+                ],
+                'meta' => [
+                    'current_page' => $productos->currentPage(),
+                    'from' => $productos->firstItem(),
+                    'last_page' => $productos->lastPage(),
+                    'per_page' => $productos->perPage(),
+                    'to' => $productos->lastItem(),
+                    'total' => $productos->total(),
+                ],
+            ],
         ]);
     }
 
@@ -22,7 +44,7 @@ class ProductoController extends Controller
 
         return response()->json([
             'mensaje' => 'Producto creado correctamente',
-            'producto' => $producto
+            'producto' => new ProductoResource($producto),
         ], 201);
     }
 
@@ -30,15 +52,15 @@ class ProductoController extends Controller
     {
         $producto = Producto::find($id);
 
-        if (!$producto) {
+        if (! $producto) {
             return response()->json([
-                'mensaje' => 'Producto no encontrado'
+                'mensaje' => 'Producto no encontrado',
             ], 404);
         }
 
         return response()->json([
             'mensaje' => 'Producto encontrado',
-            'producto' => $producto
+            'producto' => new ProductoResource($producto),
         ]);
     }
 
@@ -46,9 +68,9 @@ class ProductoController extends Controller
     {
         $producto = Producto::find($id);
 
-        if (!$producto) {
+        if (! $producto) {
             return response()->json([
-                'mensaje' => 'Producto no encontrado'
+                'mensaje' => 'Producto no encontrado',
             ], 404);
         }
 
@@ -56,7 +78,7 @@ class ProductoController extends Controller
 
         return response()->json([
             'mensaje' => 'Producto actualizado correctamente',
-            'producto' => $producto
+            'producto' => new ProductoResource($producto),
         ]);
     }
 
@@ -64,16 +86,22 @@ class ProductoController extends Controller
     {
         $producto = Producto::find($id);
 
-        if (!$producto) {
+        if (! $producto) {
             return response()->json([
-                'mensaje' => 'Producto no encontrado'
+                'mensaje' => 'Producto no encontrado',
             ], 404);
+        }
+
+        if (CarritoItem::where('producto_id', $producto->id)->exists()) {
+            return response()->json([
+                'mensaje' => 'No se puede eliminar un producto presente en un carrito.',
+            ], 409);
         }
 
         $producto->delete();
 
         return response()->json([
-            'mensaje' => 'Producto eliminado correctamente'
+            'mensaje' => 'Producto eliminado correctamente',
         ]);
     }
 }
