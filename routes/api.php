@@ -16,8 +16,10 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
 
-    Route::post('/auth/register', [AuthController::class, 'register']);
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/register', [AuthController::class, 'register'])
+        ->middleware('throttle:autenticacion');
+    Route::post('/auth/login', [AuthController::class, 'login'])
+        ->middleware('throttle:autenticacion');
 
     // Rutas de la API para productos
     Route::get('/productos', [ProductoController::class, 'index']);

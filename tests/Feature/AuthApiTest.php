@@ -79,6 +79,23 @@ class AuthApiTest extends TestCase
             ->assertJsonPath('mensaje', 'Las credenciales son incorrectas');
     }
 
+    public function test_login_is_rate_limited_after_five_attempts(): void
+    {
+        User::factory()->create(['email' => 'ana@example.com']);
+
+        for ($intento = 0; $intento < 5; $intento++) {
+            $this->postJson('/api/v1/auth/login', [
+                'email' => 'ana@example.com',
+                'password' => 'incorrecta',
+            ])->assertUnauthorized();
+        }
+
+        $this->postJson('/api/v1/auth/login', [
+            'email' => 'ana@example.com',
+            'password' => 'incorrecta',
+        ])->assertStatus(429);
+    }
+
     public function test_can_get_the_authenticated_user(): void
     {
         $usuario = User::factory()->create([
