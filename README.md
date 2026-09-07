@@ -15,6 +15,7 @@ compras con control de stock y transacciones.
 - [Endpoints](#endpoints-de-la-api)
 - [Pruebas](#forma-de-probar-el-proyecto)
 - [Seguridad](#seguridad-y-autenticación)
+- [Despliegue](#despliegue-en-producción)
 
 ## Descripción
 
@@ -24,6 +25,20 @@ bajo `/api/v1/` y devuelve respuestas JSON.
 El proyecto se enfoca en el backend y no incluye una interfaz de tienda para el
 cliente final. Los endpoints pueden consumirse desde Postman o desde cualquier
 aplicación frontend compatible con APIs REST.
+
+### API desplegada
+
+La API está disponible en Railway:
+
+```text
+https://tienda-tuki-laravel-production.up.railway.app
+```
+
+Health check:
+
+```text
+https://tienda-tuki-laravel-production.up.railway.app/up
+```
 
 ---
 
@@ -852,10 +867,22 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-La URL pública queda pendiente de definir porque requiere seleccionar un
-proveedor de hosting y configurar sus credenciales. Una vez desplegada, debe
-documentarse aquí la URL base de la API y verificarse `/up`, el login JWT y un
-flujo completo de carrito y checkout.
+La URL pública desplegada es:
+
+```text
+https://tienda-tuki-laravel-production.up.railway.app
+```
+
+La API utiliza MySQL provisionado en Railway. Las variables `DB_*` se configuran
+en el servicio Laravel mediante las variables internas del servicio MySQL. El
+comando de inicio utilizado es:
+
+```bash
+php artisan serve --host=0.0.0.0 --port=8080
+```
+
+Para verificar el despliegue, consultar `/up`, listar productos y categorías,
+y ejecutar el flujo autenticado de carrito y checkout desde Postman.
 
 ### 3. Probar las validaciones
 
